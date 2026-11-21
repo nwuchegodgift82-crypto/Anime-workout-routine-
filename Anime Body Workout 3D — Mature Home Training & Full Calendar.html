@@ -1,0 +1,3474 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anime Body Workout 3D | Home Workout & AI Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Rajdhani', 'sans-serif'],
+          },
+          colors: {
+            obsidian: '#090B10',
+            surface: '#121620',
+            surfaceLight: '#192030',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #090B10;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090B10; }
+    ::-webkit-scrollbar-thumb { background: #262f45; border-radius: 9999px; }
+
+    .glass-bar {
+      background: rgba(9, 11, 16, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes eqBounce {
+      0%, 100% { height: 4px; }
+      50% { height: 18px; }
+    }
+    .eq-bar { animation: eqBounce 0.6s infinite ease-in-out; }
+    .eq-bar:nth-child(2) { animation-delay: 0.15s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.3s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.1s; }
+    .eq-paused .eq-bar { animation: none; height: 4px; }
+
+    @keyframes pulseRing {
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.65); }
+      70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+      100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+    .active-day-node {
+      animation: pulseRing 2s infinite;
+    }
+
+    @keyframes muscleGlow {
+      0%, 100% { opacity: 0.88; }
+      50% { opacity: 1; }
+    }
+    .muscle-primary {
+      animation: muscleGlow 1.5s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ======================================================================= -->
+  <!-- TOP NAVIGATION BAR -->
+  <!-- ======================================================================= -->
+  <header class="sticky top-0 z-40 glass-bar border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <!-- Brand Logo -->
+        <a href="#" onclick="showRosterView(); return false;" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-rose-500 p-[2px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+            <div class="w-full h-full bg-[#090B10] rounded-[10px] flex items-center justify-center">
+              <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-display font-bold text-xl sm:text-2xl tracking-wider text-white uppercase leading-none">
+                ANIME BODY <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-rose-400">WORKOUT</span>
+              </h1>
+              <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/40 text-[10px] font-bold text-indigo-300 uppercase">3D WebGL</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5">28-Day Home Transformation • 3D Biomechanics • AI Voice Coach</p>
+          </div>
+        </a>
+
+        <!-- Right Controls -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Intensity Level Switcher -->
+          <div class="hidden lg:flex items-center bg-surface border border-slate-800 rounded-xl p-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2">Intensity:</span>
+            <button onclick="setGlobalLevel('Beginner')" data-lvl="Beginner" class="global-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">Beginner</button>
+            <button onclick="setGlobalLevel('Intermediate')" data-lvl="Intermediate" class="global-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">Intermediate</button>
+            <button onclick="setGlobalLevel('Extreme')" data-lvl="Extreme" class="global-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold transition">Extreme</button>
+          </div>
+
+          <!-- AI Voice Coach Mute/Unmute -->
+          <button onclick="toggleVoiceMute()" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface hover:bg-surfaceLight border border-slate-700/80 text-xs font-semibold text-indigo-300 transition">
+            <div id="headerEq" class="flex items-end gap-0.5 h-4 eq-paused">
+              <span class="eq-bar w-0.5 bg-indigo-400 rounded-full"></span>
+              <span class="eq-bar w-0.5 bg-rose-400 rounded-full"></span>
+              <span class="eq-bar w-0.5 bg-emerald-400 rounded-full"></span>
+              <span class="eq-bar w-0.5 bg-indigo-400 rounded-full"></span>
+            </div>
+            <span class="hidden sm:inline" id="headerVoiceLabel">AI Coach On</span>
+          </button>
+
+          <!-- User Profile / Sign In -->
+          <button onclick="openAuthOrProfileModal()" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-white transition">
+            <img id="navUserAvatarImg" src="" alt="3D Avatar" class="w-7 h-7 rounded-lg bg-slate-950 object-cover border border-slate-700" />
+            <div class="text-left leading-tight">
+              <div id="navUserName" class="text-xs font-bold text-white truncate max-w-[95px] sm:max-w-[130px]">Sign In / Join</div>
+              <div id="navUserSub" class="text-[10px] text-indigo-300 font-medium">Set Age & Goal</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Intensity Switcher -->
+      <div class="flex lg:hidden items-center justify-between gap-2 mt-2.5 pt-2 border-t border-slate-800/70">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Difficulty:</span>
+        <div class="flex items-center gap-1 bg-surface border border-slate-800 rounded-xl p-1">
+          <button onclick="setGlobalLevel('Beginner')" data-lvl="Beginner" class="global-lvl-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition">Beginner</button>
+          <button onclick="setGlobalLevel('Intermediate')" data-lvl="Intermediate" class="global-lvl-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition">Intermediate</button>
+          <button onclick="setGlobalLevel('Extreme')" data-lvl="Extreme" class="global-lvl-btn px-2.5 py-1 rounded-lg text-[11px] font-bold transition">Extreme</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================= -->
+  <!-- VIEW 1: 3D CHARACTER ROSTER & HOME WORKOUT DASHBOARD -->
+  <!-- ======================================================================= -->
+  <div id="rosterView" class="flex-1 flex flex-col">
+    <!-- Hero Dashboard Banner with Live 3D Character Backdrop -->
+    <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6">
+      <div class="relative overflow-hidden rounded-3xl bg-surface border border-slate-800/90 p-5 sm:p-7 shadow-2xl">
+        <!-- Live Interactive 3D Hero Stage Canvas on Right -->
+        <div class="pointer-events-none absolute right-0 top-0 bottom-0 w-full md:w-1/2 opacity-40 md:opacity-80">
+          <canvas id="heroBanner3DCanvas" class="w-full h-full block"></canvas>
+          <div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/70 to-transparent"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="max-w-2xl">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold uppercase tracking-wider">
+                100% Home Workout • No Gym
+              </span>
+              <span id="bannerLevelBadge" class="px-2.5 py-1 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[11px] font-bold uppercase tracking-wider">
+                Intermediate Plan
+              </span>
+              <span id="bannerAgeBadge" class="hidden px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-semibold">
+                Age: --
+              </span>
+            </div>
+
+            <h2 id="bannerHeadline" class="font-display font-bold text-3xl sm:text-4xl text-white mt-2.5 tracking-wide">
+              Sculpt Your 3D Anime Physique At Home
+            </h2>
+            <p id="bannerSubtext" class="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">
+              Follow a structured 28-Day Home Workout Map with real-time 3D biomechanical demonstrations, anatomical muscle target maps, and an AI Voice Coach.
+            </p>
+
+            <!-- Quick Stats Strip -->
+            <div class="grid grid-cols-3 gap-3 max-w-md mt-4">
+              <div class="p-2.5 rounded-xl bg-[#090B10]/85 border border-slate-800">
+                <div id="statDaysDone" class="font-display font-bold text-xl text-white">0 / 28</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Days Completed</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#090B10]/85 border border-slate-800">
+                <div id="statKcalTotal" class="font-display font-bold text-xl text-amber-400">0 kcal</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Home Burn</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-[#090B10]/85 border border-slate-800">
+                <div id="statTargetName" class="font-display font-bold text-xl text-indigo-400 truncate">Toji</div>
+                <div class="text-[10px] uppercase tracking-wider text-slate-400">Target Build</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 mt-5">
+              <button onclick="launchTargetCharacterMap()" class="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition">
+                <span id="bannerStartBtnText">Open 28-Day Workout Map</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </button>
+              <button onclick="openAuthOrProfileModal()" class="px-4 py-3 rounded-xl bg-[#090B10]/90 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs sm:text-sm font-semibold transition">
+                Sign In / Edit Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Search Bar -->
+    <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+          <button data-goal="All" class="goal-btn active px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shrink-0 transition">All 10 3D Fighters</button>
+          <button data-goal="Lean & Explosive" class="goal-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-surface text-slate-300 hover:bg-surfaceLight border border-slate-800 shrink-0 transition">Lean & Explosive</button>
+          <button data-goal="Shredded Calisthenics" class="goal-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-surface text-slate-300 hover:bg-surfaceLight border border-slate-800 shrink-0 transition">Shredded Calisthenics</button>
+          <button data-goal="Brute Strength" class="goal-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-surface text-slate-300 hover:bg-surfaceLight border border-slate-800 shrink-0 transition">Brute Strength</button>
+          <button data-goal="Agility & Core" class="goal-btn px-3.5 py-2 rounded-xl text-xs font-semibold bg-surface text-slate-300 hover:bg-surfaceLight border border-slate-800 shrink-0 transition">Agility & Core</button>
+        </div>
+
+        <div class="relative w-full md:w-72">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="searchInput" type="text" placeholder="Search Toji, Baki, Goku..." class="w-full pl-10 pr-4 py-2 bg-surface border border-slate-800 rounded-xl text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition" />
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 3D Anime Characters Grid -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div id="characterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Populated with real 3D WebGL snapshots & interactive profile cards -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- VIEW 2: HOME WORKOUT 28-DAY JOURNEY MAP & DAY OVERVIEW STUDIO -->
+  <!-- ======================================================================= -->
+  <div id="mapStudioView" class="hidden flex-1 relative overflow-hidden">
+    <!-- Ambient Real-Time 3D Character Backdrop -->
+    <div class="pointer-events-none fixed inset-0 z-0 opacity-30">
+      <canvas id="studioBackdrop3DCanvas" class="w-full h-full block"></canvas>
+      <div class="absolute inset-0 bg-gradient-to-b from-[#090B10]/75 via-[#090B10]/85 to-[#090B10]"></div>
+    </div>
+
+    <div class="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Top Character Header Bar -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
+        <div class="flex items-center gap-4">
+          <button onclick="showRosterView()" class="p-2.5 rounded-xl bg-surface hover:bg-surfaceLight border border-slate-700/80 text-slate-300 hover:text-white transition shrink-0" title="Back to 3D Roster">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          </button>
+
+          <img id="studioCharAvatarImg" src="" alt="3D Fighter" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#090B10] border-2 object-cover shrink-0 shadow-xl" />
+
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="studioCharAnime" class="px-2.5 py-0.5 rounded-md bg-surface border border-slate-700 text-[11px] font-bold uppercase tracking-wider text-slate-300">Anime</span>
+              <span id="studioCharPhysique" class="px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border">Physique</span>
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold uppercase tracking-wider">28-Day Home Plan</span>
+            </div>
+            <h2 id="studioCharName" class="font-display font-bold text-3xl sm:text-4xl text-white tracking-wide mt-1">Character Name</h2>
+            <p id="studioHomeGear" class="text-xs text-slate-300 mt-0.5">Home Gear Tip</p>
+          </div>
+        </div>
+
+        <!-- Progress & AI Voice Coach Bar -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="px-4 py-2.5 rounded-2xl bg-surface/95 border border-slate-800">
+            <div class="flex items-center justify-between gap-4 text-xs mb-1">
+              <span class="text-slate-400 font-semibold">28-Day Progress</span>
+              <span id="studioProgressPercent" class="font-bold text-emerald-400">0%</span>
+            </div>
+            <div class="w-36 h-2 rounded-full bg-[#090B10] overflow-hidden">
+              <div id="studioProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-400 transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <button onclick="startGuidedWorkoutPlayer()" class="px-5 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white font-display font-bold text-base uppercase tracking-wider shadow-xl shadow-indigo-600/25 flex items-center gap-2 transition">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+            <span id="startDayCtaLabel">START DAY 1 WORKOUT</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TWO-COLUMN HOME WORKOUT STRUCTURE: LEFT = 28-DAY WINDING PATH MAP | RIGHT = SELECTED DAY OVERVIEW & 3D PREVIEW -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <!-- LEFT (5 Cols): Authentic Home Workout 4-Week / 28-Day Winding S-Curve Map -->
+        <div class="lg:col-span-5">
+          <div class="rounded-3xl bg-surface/95 border border-slate-800 p-5 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Home Workout Structure</span>
+                <h3 class="font-display font-bold text-2xl text-white">28-Day Transformation Map</h3>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-[#090B10] border border-slate-800 text-[11px] font-bold text-slate-300">4 Weeks</span>
+            </div>
+
+            <div id="windingMapContainer" class="space-y-6 max-h-[680px] overflow-y-auto pr-1">
+              <!-- 4 Weeks x 7 Days S-curve nodes injected here -->
+            </div>
+          </div>
+        </div>
+
+      <!-- TWO-COLUMN HOME WORKOUT STRUCTURE: LEFT = FULL YEAR/MONTH/WEEK/DAY CALENDAR & PERIODIZATION | RIGHT = SELECTED DAY & NUMBERED EXERCISE CARDS -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+        <!-- LEFT (5 Cols): Full Multi-Year / Month / Week / Day Calendar + Periodization Overview -->
+        <div class="lg:col-span-5">
+          <div class="rounded-3xl bg-surface/95 border border-slate-800 p-5 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Multi-Year Home Training Calendar</span>
+                <h3 class="font-display font-bold text-2xl text-white">Years, Weeks &amp; Days</h3>
+              </div>
+              <div class="flex items-center gap-1 bg-[#090B10] border border-slate-800 rounded-xl p-1 text-[11px] font-bold">
+                <button type="button" onclick="setCalendarViewMode('month')" id="calModeMonthBtn" class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white transition">Month</button>
+                <button type="button" onclick="setCalendarViewMode('week')" id="calModeWeekBtn" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">Week</button>
+                <button type="button" onclick="setCalendarViewMode('year')" id="calModeYearBtn" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition">Year</button>
+              </div>
+            </div>
+
+            <!-- Year & Month Navigation Controls -->
+            <div class="flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#090B10] border border-slate-800">
+              <button type="button" onclick="stepCalendarPeriod(-1)" class="p-2 rounded-xl bg-surface hover:bg-surfaceLight border border-slate-700/80 text-slate-300 hover:text-white transition" title="Previous Period">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+
+              <div class="flex items-center gap-2">
+                <select id="calendarMonthSelect" onchange="onCalendarMonthOrYearChange()" class="bg-surface border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-indigo-500"></select>
+                <select id="calendarYearSelect" onchange="onCalendarMonthOrYearChange()" class="bg-surface border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold text-indigo-300 focus:outline-none focus:border-indigo-500">
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026" selected>2026</option>
+                  <option value="2027">2027</option>
+                  <option value="2028">2028</option>
+                  <option value="2029">2029</option>
+                </select>
+              </div>
+
+              <button type="button" onclick="stepCalendarPeriod(1)" class="p-2 rounded-xl bg-surface hover:bg-surfaceLight border border-slate-700/80 text-slate-300 hover:text-white transition" title="Next Period">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Active Periodization Phase Banner -->
+            <div id="periodizationPhaseBanner" class="p-3 rounded-2xl bg-[#090B10] border border-slate-800 flex items-center justify-between gap-2">
+              <div>
+                <div id="periodPhaseTitle" class="text-xs font-bold text-indigo-300 uppercase tracking-wider">Phase I • Base Conditioning &amp; Form</div>
+                <div id="periodPhaseDesc" class="text-[11px] text-slate-400">Year-round home progression with weekly overload &amp; recovery cycles.</div>
+              </div>
+              <button type="button" onclick="jumpToTodayInCalendar()" class="px-2.5 py-1.5 rounded-lg bg-surface hover:bg-surfaceLight border border-slate-700 text-[10px] font-bold uppercase text-emerald-300 shrink-0 transition">Today</button>
+            </div>
+
+            <!-- Dynamic Calendar Grid Container (Month / Week / Year) -->
+            <div id="windingMapContainer" class="space-y-4 max-h-[680px] overflow-y-auto pr-1">
+              <!-- Populated by renderFullCalendarView() -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT (7 Cols): Selected Day Routine + Screenshot-Inspired Numbered Exercise Cards ('How to perform' | 'Target muscles') -->
+        <div class="lg:col-span-7 space-y-5">
+          <!-- Day Header Summary Card -->
+          <div class="rounded-3xl bg-surface/95 border border-slate-800 p-5 shadow-xl">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span id="dayOverviewBadge" class="px-2.5 py-0.5 rounded-md bg-indigo-600 text-white text-xs font-bold uppercase">NOV 21, 2026</span>
+                  <span id="dayOverviewWeekTag" class="px-2.5 py-0.5 rounded-md bg-surfaceLight border border-slate-700 text-xs font-bold text-indigo-300">Week 47 • Cycle Day 1</span>
+                  <span id="dayOverviewLevel" class="px-2.5 py-0.5 rounded-md bg-[#090B10] border border-slate-700 text-xs font-bold text-amber-400">Intermediate</span>
+                </div>
+                <h3 id="dayOverviewTitle" class="font-display font-bold text-2xl sm:text-3xl text-white mt-1">Upper Body &amp; V-Taper</h3>
+              </div>
+
+              <div class="flex items-center gap-4">
+                <div class="text-center">
+                  <div id="dayOverviewMins" class="font-display font-bold text-xl text-white">14 mins</div>
+                  <div class="text-[10px] uppercase text-slate-400">Duration</div>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-800"></div>
+                <div class="text-center">
+                  <div id="dayOverviewKcal" class="font-display font-bold text-xl text-rose-400">135 kcal</div>
+                  <div class="text-[10px] uppercase text-slate-400">Est. Burn</div>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-800"></div>
+                <div class="text-center">
+                  <div id="dayOverviewCount" class="font-display font-bold text-xl text-emerald-400">4</div>
+                  <div class="text-[10px] uppercase text-slate-400">Exercises</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Screenshot 1 Inspired: Numbered Exercise Cards with 'How to perform' & 'Target muscles' Tabs + Completion Circle -->
+            <div class="mt-5">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Session Exercises • Tap Circle to Complete</span>
+                <button type="button" onclick="startGuidedWorkoutPlayer()" class="text-xs font-bold text-indigo-400 hover:text-indigo-300">Launch Guided Player →</button>
+              </div>
+              <div id="dayExerciseSequenceList" class="space-y-4">
+                <!-- Numbered exercise cards with 'How to perform' & 'Target muscles' tabs rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- VIEW 3: FULL-SCREEN GUIDED HOME WORKOUT PLAYER (READY -> ACTIVE 3D -> REST -> TROPHY) -->
+  <!-- ======================================================================= -->
+  <div id="guidedPlayerModal" class="fixed inset-0 z-50 hidden bg-[#090B10] flex flex-col overflow-y-auto">
+    <!-- Top Player Bar -->
+    <div class="px-4 sm:px-8 py-4 border-b border-slate-800 flex items-center justify-between bg-surface/90 backdrop-blur-md">
+      <button onclick="closeGuidedPlayer()" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#090B10] border border-slate-700 text-xs font-bold text-slate-300 hover:text-white transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <span>Quit Workout</span>
+      </button>
+
+      <!-- Step Progress Bars -->
+      <div id="playerProgressBars" class="flex-1 max-w-md mx-4 flex items-center gap-1.5">
+        <!-- Segmented bars -->
+      </div>
+
+      <button onclick="toggleVoiceMute()" class="px-3 py-2 rounded-xl bg-[#090B10] border border-slate-700 text-xs font-bold text-indigo-300">
+        <span id="playerVoiceStatus">AI Coach: ON</span>
+      </button>
+    </div>
+
+    <!-- Player Dynamic Stage -->
+    <div class="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-8 py-6 flex flex-col justify-center">
+      <!-- STAGE A: READY COUNTDOWN (3-2-1) -->
+      <div id="playerStageReady" class="hidden text-center py-10 space-y-6">
+        <span class="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-xs font-bold uppercase tracking-wider">Get Into Position</span>
+        <h2 id="readyNextExName" class="font-display font-bold text-4xl sm:text-5xl text-white">Decline Push-Ups</h2>
+        <p id="readyNextExTarget" class="text-sm text-rose-400 font-semibold">Target: Chest, Shoulders, Triceps</p>
+        <div id="readyCountdownNum" class="font-display font-bold text-8xl text-indigo-400 tabular-nums">5</div>
+        <button onclick="skipReadyCountdown()" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm uppercase tracking-wider">
+          Start Immediately →
+        </button>
+      </div>
+
+      <!-- STAGE B: ACTIVE 3D EXERCISE EXECUTION -->
+      <div id="playerStageActive" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Left 7 Cols: Large Real-Time 3D WebGL Exercise Demonstration -->
+        <div class="lg:col-span-7">
+          <div id="player3DWrapper" class="relative rounded-3xl bg-surface border border-slate-800 overflow-hidden aspect-[4/3] shadow-2xl cursor-grab active:cursor-grabbing">
+            <canvas id="player3DCanvas" class="w-full h-full block"></canvas>
+            <div class="absolute top-3 left-3 flex items-center gap-2">
+              <span class="px-3 py-1 rounded-xl bg-slate-950/85 border border-slate-800 text-xs font-bold text-indigo-300">3D Live Form</span>
+              <button onclick="toggle3DSpeed()" class="px-2.5 py-1 rounded-xl bg-slate-950/85 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white">Slow-Mo Toggle</button>
+            </div>
+            <div class="absolute bottom-3 left-3 right-3 p-3 rounded-2xl bg-slate-950/85 backdrop-blur-md border border-slate-800/90">
+              <p id="playerFormCueText" class="text-xs text-slate-200 leading-relaxed">Keep core braced and lower chest all the way down.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Rep / Timer Counter + Anatomical Body Target Map + Done Button -->
+        <div class="lg:col-span-5 space-y-5">
+          <div>
+            <span id="playerStepLabel" class="text-xs font-bold uppercase tracking-wider text-indigo-400">Exercise 1 of 4</span>
+            <h2 id="playerExTitle" class="font-display font-bold text-3xl sm:text-4xl text-white mt-1">Decline Push-Ups</h2>
+            <p id="playerExTargetLine" class="text-xs font-semibold text-rose-400 mt-1">Target: Upper Chest, Shoulders, Triceps</p>
+          </div>
+
+          <!-- Big Target Rep or Timer Display -->
+          <div class="p-6 rounded-3xl bg-surface border border-slate-800 text-center">
+            <div id="playerPrescriptionMain" class="font-display font-bold text-5xl sm:text-6xl text-white tabular-nums">
+              3 × 15 REPS
+            </div>
+            <p id="playerPrescriptionSub" class="text-xs text-slate-400 mt-1">Complete all sets with strict form, then tap DONE</p>
+          </div>
+
+          <!-- Compact Muscle Target Map -->
+          <div class="p-3.5 rounded-2xl bg-surface border border-slate-800 flex items-center justify-around">
+            <div class="w-20 h-28" id="playerBodyFront"></div>
+            <div class="text-center px-2">
+              <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Active Muscles</div>
+              <div id="playerMuscleTags" class="flex flex-wrap justify-center gap-1"></div>
+            </div>
+            <div class="w-20 h-28" id="playerBodyBack"></div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-3 gap-3">
+            <button onclick="prevPlayerExercise()" class="py-4 rounded-2xl bg-surface hover:bg-surfaceLight border border-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider">
+              ← Prev
+            </button>
+            <button onclick="completeCurrentPlayerExercise()" class="col-span-2 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-display font-bold text-xl uppercase tracking-wider shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 transition">
+              <svg class="w-6 h-6 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span>DONE / NEXT</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAGE C: REST SCREEN (HOME WORKOUT APP STYLE) -->
+      <div id="playerStageRest" class="hidden text-center max-w-lg mx-auto py-6 space-y-6">
+        <span class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold uppercase tracking-wider">Recovery Rest</span>
+        <div id="restCountdownDisplay" class="font-display font-bold text-7xl sm:text-8xl text-white tabular-nums">00:30</div>
+
+        <div class="flex items-center justify-center gap-3">
+          <button onclick="addRestSeconds(20)" class="px-5 py-2.5 rounded-xl bg-surface hover:bg-surfaceLight border border-slate-700 text-sm font-bold text-indigo-300">+20s Rest</button>
+          <button onclick="skipRestStage()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-bold text-white uppercase tracking-wider">Skip Rest →</button>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-surface border border-slate-800 text-left">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Up Next</div>
+          <div id="restNextUpName" class="font-display font-bold text-xl text-white mt-0.5">Pike Shoulder Push-Ups</div>
+          <div id="restNextUpTarget" class="text-xs text-rose-400 mt-0.5">Target: Shoulders & Triceps</div>
+        </div>
+      </div>
+
+      <!-- STAGE D: WORKOUT COMPLETE TROPHY SCREEN -->
+      <div id="playerStageComplete" class="hidden text-center max-w-lg mx-auto py-8 space-y-6">
+        <div class="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/30">
+          <svg class="w-12 h-12 text-slate-950" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        </div>
+
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Day Cleared!</span>
+          <h2 id="completeHeadline" class="font-display font-bold text-4xl text-white mt-1">DAY 1 COMPLETED!</h2>
+          <p class="text-sm text-slate-300 mt-1">You are one step closer to achieving your target anime physique.</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="p-3.5 rounded-2xl bg-surface border border-slate-800">
+            <div id="completeExCount" class="font-display font-bold text-2xl text-white">4</div>
+            <div class="text-[10px] uppercase text-slate-400">Exercises</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-surface border border-slate-800">
+            <div id="completeKcal" class="font-display font-bold text-2xl text-rose-400">140</div>
+            <div class="text-[10px] uppercase text-slate-400">Kcal Burned</div>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-surface border border-slate-800">
+            <div id="completeDuration" class="font-display font-bold text-2xl text-indigo-400">14 min</div>
+            <div class="text-[10px] uppercase text-slate-400">Time</div>
+          </div>
+        </div>
+
+        <button onclick="finishAndReturnToMap()" class="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-display font-bold text-lg uppercase tracking-wider shadow-xl">
+          Continue 28-Day Map →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL: EMAIL SIGN-IN / REGISTER & PROFILE SETUP (DOB, AGE, TARGET 3D BODY, LEVEL) -->
+  <!-- ======================================================================= -->
+  <div id="authProfileModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/80 backdrop-blur-sm p-3 sm:p-6">
+    <div class="min-h-full flex items-center justify-center">
+      <div class="w-full max-w-2xl bg-surface border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-4">
+        <div class="p-5 sm:p-6 bg-gradient-to-r from-indigo-950/60 via-surface to-rose-950/40 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider text-indigo-400">Fighter Account & 3D Physique Goal</span>
+            <h3 id="authModalTitle" class="font-display font-bold text-2xl sm:text-3xl text-white mt-0.5">Sign In & Configure Your Profile</h3>
+          </div>
+          <button onclick="closeAuthProfileModal()" class="p-2 rounded-xl bg-[#090B10] hover:bg-slate-800 border border-slate-700 text-slate-400 hover:text-white transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="p-5 sm:p-6 space-y-5">
+          <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#090B10] border border-slate-800">
+            <button type="button" onclick="switchAuthTab('signup')" id="tabSignupBtn" class="py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-indigo-600 text-white transition">Create Profile</button>
+            <button type="button" onclick="switchAuthTab('login')" id="tabLoginBtn" class="py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition">Email Sign In</button>
+          </div>
+
+          <!-- Email Login Only -->
+          <form id="loginOnlyForm" onsubmit="handleEmailLogin(event)" class="hidden space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Email Address</label>
+              <input type="email" id="loginEmail" required placeholder="fighter@animeworkout.com" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+              <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm uppercase tracking-wider shadow-lg transition">
+              Sign In to Fighter Account
+            </button>
+          </form>
+
+          <!-- Full Registration / Profile Edit -->
+          <form id="profileSetupForm" onsubmit="handleSaveProfile(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Fighter Name</label>
+                <input type="text" id="profName" required placeholder="e.g. Kenji / Shadow" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Email Address</label>
+                <input type="email" id="profEmail" required placeholder="you@example.com" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+                <input type="password" id="profPassword" required placeholder="Create password" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="block text-xs font-bold uppercase tracking-wider text-slate-300">Date of Birth</label>
+                  <span id="calculatedAgeDisplay" class="text-xs font-bold text-emerald-400">Age: -- yrs</span>
+                </div>
+                <input type="date" id="profDob" required onchange="updateCalculatedAge()" class="w-full px-4 py-2.5 rounded-xl bg-[#090B10] border border-slate-700 text-sm text-white focus:outline-none focus:border-indigo-500" />
+              </div>
+            </div>
+
+            <!-- Fitness Level -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Select Your Training Level</label>
+              <div class="grid grid-cols-3 gap-2.5">
+                <label class="cursor-pointer">
+                  <input type="radio" name="profLevel" value="Beginner" class="peer sr-only" />
+                  <div class="p-3 rounded-xl bg-[#090B10] border border-slate-700 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/15 text-center transition">
+                    <div class="text-xs sm:text-sm font-bold text-emerald-400">Beginner</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">0.7x Volume • 45s Rest</div>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="profLevel" value="Intermediate" checked class="peer sr-only" />
+                  <div class="p-3 rounded-xl bg-[#090B10] border border-slate-700 peer-checked:border-amber-500 peer-checked:bg-amber-500/15 text-center transition">
+                    <div class="text-xs sm:text-sm font-bold text-amber-400">Intermediate</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">1.0x Standard • 30s Rest</div>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="profLevel" value="Extreme" class="peer sr-only" />
+                  <div class="p-3 rounded-xl bg-[#090B10] border border-slate-700 peer-checked:border-rose-500 peer-checked:bg-rose-500/15 text-center transition">
+                    <div class="text-xs sm:text-sm font-bold text-rose-400">Extreme</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">1.5x Reps • 20s Rest</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Target 3D Anime Body Selector -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">Choose Target 3D Anime Physique</label>
+              <div id="profileCharacterSelector" class="grid grid-cols-2 sm:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-1">
+                <!-- Populated with 3D rendered thumbnails -->
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+              <button type="submit" class="w-full sm:flex-1 py-3 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm uppercase tracking-wider shadow-lg shadow-indigo-600/25 transition">
+                Save Profile & Start 28-Day Map
+              </button>
+              <button type="button" id="logoutBtn" onclick="handleLogout()" class="hidden w-full sm:w-auto py-3 px-4 rounded-xl bg-rose-950/50 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 font-bold text-xs uppercase tracking-wider transition">
+                Sign Out
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-300">
+    <div id="toastMessage" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs sm:text-sm font-semibold shadow-xl border border-indigo-400/30">
+      Updated!
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. ALL 10 ANIME CHARACTERS + MATURE REALISTIC 3D PROFILES & HOME WORKOUTS
+    // =========================================================================
+    const charactersData = [
+      {
+        id: 'toji',
+        name: 'Toji Fushiguro',
+        anime: 'Jujutsu Kaisen',
+        physiqueTitle: 'Heavenly Restriction',
+        goalCategory: 'Lean & Explosive',
+        accent: '#10b981',
+        badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        muscles: ['Wide Lats', 'Capped Shoulders', 'Dense Chest', 'Explosive Quads'],
+        description: 'Gritty, mature adult athletic build with zero cursed energy—sharp neck & trap definition, fitted dark shirt aesthetic, dense upper-body hypertrophy, and explosive speed.',
+        homeGearTip: 'Book-filled backpack, sturdy chair, and thick bath towel.',
+        backdropScene: 'urbanNight',
+        style3D: { skin: 0xc99373, hair: 0x0b0f17, top: 0x10131a, pants: 0x1e2430, accent: 0x10b981, bulk: 1.11, hairStyle: 'spikyPart', outfit: 'compression', jawline: 1.14 },
+        workouts: [
+          {
+            focus: 'Upper Push & V-Taper',
+            exercises: [
+              { name: 'Decline Push-Ups (Feet on Chair)', animType: 'pushup', baseSets: 3, baseReps: 15, targetText: 'Upper Chest, Front Delts, Triceps', primary: ['chest', 'shoulders'], secondary: ['triceps', 'abs'], tip: 'Elevate feet on a sturdy chair; keep neck neutral and lower chest with controlled tension.', startCue: 'High plank with feet elevated on chair, core braced, wrists under shoulders.', peakCue: 'Chest hovering above floor, elbows ~45°, scapulae retracted without sag.' },
+              { name: 'Pike Shoulder Push-Ups', animType: 'pike', baseSets: 3, baseReps: 12, targetText: 'Deltoids, Upper Chest, Triceps', primary: ['shoulders'], secondary: ['triceps', 'traps'], tip: 'Form an inverted V with hips high; lower crown of head toward floor and press vertically.', startCue: 'Hips piked high, hands shoulder-width, gaze between hands.', peakCue: 'Crown of head near floor with vertical forearm alignment before pressing up.' },
+              { name: 'Explosive Clap Push-Ups', animType: 'pushup', baseSets: 3, baseReps: 10, targetText: 'Chest Power, Triceps, Core', primary: ['chest'], secondary: ['shoulders', 'triceps', 'abs'], tip: 'Explode off the floor at maximum velocity to build fast-twitch power.', startCue: 'Strict plank braced from heels to head.', peakCue: 'Rapid concentric drive lifting hands cleanly, absorbing softly on landing.' },
+              { name: 'Chair Tricep Dips', animType: 'dips', baseSets: 3, baseReps: 16, targetText: 'Triceps, Lower Chest, Delts', primary: ['triceps'], secondary: ['chest', 'shoulders'], tip: 'Keep spine close to the chair edge and lower to 90 degrees without rolling shoulders forward.', startCue: 'Hands gripping chair edge, chest lifted, knees bent or legs extended.', peakCue: 'Elbows bent to ~90° with shoulder blades back and down.' }
+            ]
+          },
+          {
+            focus: 'Back Width & Forearm Grip',
+            exercises: [
+              { name: 'Heavy Backpack Bent-Over Rows', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Lats, Upper Back, Biceps, Forearms', primary: ['lats', 'traps'], secondary: ['biceps', 'forearms'], tip: 'Hinge hips back 45° with flat spine and drive elbows high past your ribs.', startCue: 'Soft knees, hips hinged back, flat neutral spine holding loaded pack.', peakCue: 'Elbows pulled past torso, squeezing lats and mid-back for 1 second.' },
+              { name: 'Floor Towel Lat Pull-Ins', animType: 'pull', baseSets: 3, baseReps: 12, targetText: 'Wide Lats, Rear Delts, Core', primary: ['lats'], secondary: ['shoulders', 'abs'], tip: 'Lie face down on smooth floor, pull torso forward by driving elbows down.', startCue: 'Prone on floor with hands gripping towel and core engaged.', peakCue: 'Elbows driven toward ribs, chest lifted slightly off mat.' },
+              { name: 'Plank Shoulder Taps', animType: 'plank', baseSets: 3, baseReps: 24, targetText: 'Abs, Obliques, Shoulders', primary: ['abs', 'obliques'], secondary: ['shoulders'], tip: 'Lock hips and pelvis completely still without swaying side-to-side.', startCue: 'Wide-stance high plank with glutes and abs locked.', peakCue: 'Single hand tapping opposite shoulder with zero hip rotation.' }
+            ]
+          },
+          {
+            focus: 'Heavenly Legs & Burst Speed',
+            exercises: [
+              { name: 'Backpack Goblet Squats', animType: 'squat', baseSets: 4, baseReps: 18, targetText: 'Quads, Glutes, Hamstrings', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'abs'], tip: 'Hug heavy backpack to chest, brace torso, and sink below parallel.', startCue: 'Feet shoulder-width, toes slightly out, backpack held tight to sternum.', peakCue: 'Hip crease below knee level, chest proud, knees tracking over toes.' },
+              { name: 'Explosive Jump Lunges', animType: 'lunge', baseSets: 3, baseReps: 16, targetText: 'Quads, Glutes, Calves', primary: ['quads', 'glutes'], secondary: ['calves', 'hamstrings'], tip: 'Switch legs mid-air with explosive drive and land softly through mid-foot.', startCue: 'Split lunge stance with upright torso and braced core.', peakCue: 'Both knees near 90° at bottom, exploding upward into mid-air switch.' },
+              { name: 'High-Knee Sprint Intervals', animType: 'sprint', baseSets: 4, baseReps: '30s', targetText: 'Calves, Hip Flexors, Quads', primary: ['quads', 'calves'], secondary: ['abs'], tip: 'Drive knees up at high cadence while pumping arms in opposition.', startCue: 'Athletic forward lean on balls of feet.', peakCue: 'Lead knee driven up to hip height with rapid arm swing.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'baki',
+        name: 'Baki Hanma',
+        anime: 'Baki',
+        physiqueTitle: 'Demon Back & Conditioning',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#ef4444',
+        badgeClass: 'bg-red-500/15 text-red-300 border-red-500/30',
+        muscles: ['Demon Back', 'Combat Core', 'Pistol Quads', 'Fighter Neck'],
+        description: 'Mature underground fighter conditioning. Carved posterior chain, isometric control, unilateral leg strength, and combat footwork.',
+        homeGearTip: 'Zero equipment required—pure floor calisthenics.',
+        backdropScene: 'dojoArena',
+        style3D: { skin: 0xc68967, hair: 0x4a1e13, top: 0xc68967, pants: 0x7f1d1d, accent: 0xef4444, bulk: 1.14, hairStyle: 'shaggy', outfit: 'shirtless', jawline: 1.12 },
+        workouts: [
+          {
+            focus: 'Demon Back & Push Tension',
+            exercises: [
+              { name: 'Archer Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 12, targetText: 'Chest, Shoulders, Triceps, Obliques', primary: ['chest', 'triceps'], secondary: ['shoulders', 'obliques'], tip: 'Extend one arm straight out while pressing with the working side.', startCue: 'Wide hand placement with rigid plank body.', peakCue: 'Weight shifted over working arm while opposite arm extends long.' },
+              { name: 'Superman Back Extensions (3s Hold)', animType: 'superman', baseSets: 4, baseReps: 15, targetText: 'Lats, Traps, Lower Back, Glutes', primary: ['lats', 'traps', 'lowerBack'], secondary: ['glutes'], tip: 'Lift chest and thighs off floor, pulling elbows back to carve posterior detail.', startCue: 'Prone on floor with arms extended and glutes engaged.', peakCue: '3-second isometric hold with scapulae squeezed and chest elevated.' },
+              { name: 'Diamond Push-Ups', animType: 'pushup', baseSets: 3, baseReps: 15, targetText: 'Triceps, Inner Chest', primary: ['triceps', 'chest'], secondary: ['shoulders'], tip: 'Form a diamond under your sternum and keep elbows tucked close.', startCue: 'Hands close together beneath chest, core tight.', peakCue: 'Chest touching hands with elbows tracking back cleanly.' }
+            ]
+          },
+          {
+            focus: 'Arena Legs & Shadowboxing',
+            exercises: [
+              { name: 'Pistol Squats (Chair Assisted)', animType: 'squat', baseSets: 4, baseReps: 10, targetText: 'Quads, Glutes, Core Balance', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'abs'], tip: 'Lower slowly on one leg; lightly tap a chair behind you for balance.', startCue: 'Standing tall on one leg, opposite leg extended forward.', peakCue: 'Deep single-leg squat with heel planted and torso balanced.' },
+              { name: 'Shadowboxing Speed Rounds', animType: 'box', baseSets: 4, baseReps: '60s', targetText: 'Shoulders, Obliques, Arms', primary: ['shoulders', 'obliques'], secondary: ['triceps', 'calves'], tip: 'Throw crisp straight punches and hooks with hip rotation and guarded chin.', startCue: 'Balanced combat stance, hands protecting jaw, knees loose.', peakCue: 'Full extension on strikes with snappy retraction and core rotation.' },
+              { name: 'Dragon Flag Leg Lowers', animType: 'legraise', baseSets: 4, baseReps: 10, targetText: 'Six-Pack Abs, Obliques, Lats', primary: ['abs', 'obliques'], secondary: ['lats'], tip: 'Grip couch base behind head and lower rigid body under strict control.', startCue: 'Supine on mat gripping sturdy anchor behind head.', peakCue: 'Straight torso and legs lowered slowly without arching lower back.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'jinwoo',
+        name: 'Sung Jin-Woo',
+        anime: 'Solo Leveling',
+        physiqueTitle: 'Shadow Monarch Aesthetics',
+        goalCategory: 'Lean & Explosive',
+        accent: '#3b82f6',
+        badgeClass: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+        muscles: ['Full-Body Lean Tone', 'Six-Pack Abs', 'Stamina', 'Agility'],
+        description: 'Disciplined daily conditioning for a lean, sharp, high-stamina hunter frame built on strict consistency.',
+        homeGearTip: 'Zero equipment needed—bedroom floor only.',
+        backdropScene: 'shadowMonolith',
+        style3D: { skin: 0xd9b096, hair: 0x090c14, top: 0x0f172a, pants: 0x090c14, accent: 0x3b82f6, bulk: 1.04, hairStyle: 'sleek', outfit: 'monarch', jawline: 1.08 },
+        workouts: [
+          {
+            focus: 'System Daily Quest Full Body',
+            exercises: [
+              { name: 'System Chest-to-Floor Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 20, targetText: 'Chest, Triceps, Front Shoulders', primary: ['chest', 'triceps'], secondary: ['shoulders', 'abs'], tip: 'Keep body in a straight plank line from head to heels.', startCue: 'Hands shoulder-width, glutes squeezed, abs braced.', peakCue: 'Full range of motion with chest near floor and full lockout.' },
+              { name: 'System Core V-Ups', animType: 'legraise', baseSets: 4, baseReps: 20, targetText: 'Upper & Lower Abs, Obliques', primary: ['abs'], secondary: ['obliques'], tip: 'Reach hands toward shins/toes at top and lower with control.', startCue: 'Lying flat with arms extended overhead and legs straight.', peakCue: 'Torso and legs folding into a crisp V while keeping lower back down.' },
+              { name: 'System Deep Air Squats', animType: 'squat', baseSets: 4, baseReps: 25, targetText: 'Quads, Glutes, Hamstrings', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves'], tip: 'Sink hips below parallel and drive through mid-foot.', startCue: 'Feet shoulder-width, chest upright, core braced.', peakCue: 'Hips below knee line with neutral spine.' },
+              { name: 'Shadow Burpees', animType: 'burpee', baseSets: 3, baseReps: 12, targetText: 'Full Body, Quads, Chest, Core', primary: ['quads', 'chest', 'abs'], secondary: ['shoulders', 'calves'], tip: 'Smooth, controlled transition from plank to vertical jump.', startCue: 'Standing tall with feet hip-width apart.', peakCue: 'Solid plank position followed by tall vertical jump.' }
+            ]
+          },
+          {
+            focus: 'Monarch Core & Speed',
+            exercises: [
+              { name: 'Mountain Climber Sprints', animType: 'sprint', baseSets: 4, baseReps: '40s', targetText: 'Lower Abs, Hip Flexors, Shoulders', primary: ['abs'], secondary: ['shoulders', 'quads'], tip: 'Drive knees smoothly toward chest while keeping hips level.', startCue: 'Strong high plank with shoulders stacked over wrists.', peakCue: 'Alternating knee drives with steady breathing and flat hips.' },
+              { name: 'Hollow Body Hold', animType: 'plank', baseSets: 4, baseReps: '40s', targetText: 'Deep Transverse Abs', primary: ['abs'], secondary: ['obliques', 'quads'], tip: 'Press lower back firmly into floor with shoulders and legs lifted.', startCue: 'Supine on mat with arms reaching long.', peakCue: 'Lower back glued to floor, shoulder blades and heels hovering.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'goku',
+        name: 'Son Goku',
+        anime: 'Dragon Ball',
+        physiqueTitle: 'Saiyan Martial Power',
+        goalCategory: 'Brute Strength',
+        accent: '#f97316',
+        badgeClass: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+        muscles: ['Thick Chest', 'Saiyan Shoulders', 'Power Quads', 'Core'],
+        description: 'High-output martial conditioning combining vertical pressing, split-leg power, and explosive bodyweight work.',
+        homeGearTip: 'Sturdy wall for pike/handstand push-ups and a chair for split squats.',
+        backdropScene: 'mountainCanyon',
+        style3D: { skin: 0xd19873, hair: 0x090c14, top: 0xc2410c, pants: 0xc2410c, accent: 0x3b82f6, bulk: 1.16, hairStyle: 'saiyan', outfit: 'gi', jawline: 1.1 },
+        workouts: [
+          {
+            focus: '100x Gravity Upper Body',
+            exercises: [
+              { name: 'Wall Handstand / Steep Pike Push-Ups', animType: 'pike', baseSets: 4, baseReps: 10, targetText: 'Shoulders, Traps, Triceps', primary: ['shoulders', 'traps'], secondary: ['triceps', 'abs'], tip: 'Lower head toward a folded towel and press powerfully upward.', startCue: 'Steep pike or wall-supported handstand with core tight.', peakCue: 'Controlled descent with elbows tracking slightly back.' },
+              { name: 'Diamond Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 16, targetText: 'Triceps, Inner Chest', primary: ['triceps', 'chest'], secondary: ['shoulders'], tip: 'Keep elbows tucked close to ribs through full range.', startCue: 'Hands close under chest in tight plank.', peakCue: 'Deep elbow bend and crisp lockout.' },
+              { name: 'Plank-to-Pushup Up-Downs', animType: 'plank', baseSets: 3, baseReps: 16, targetText: 'Triceps, Shoulders, Core', primary: ['triceps', 'abs'], secondary: ['shoulders', 'chest'], tip: 'Alternate leading arms while minimizing hip rock.', startCue: 'Forearm plank with core engaged.', peakCue: 'Pressing up to high plank and returning to forearms smoothly.' }
+            ]
+          },
+          {
+            focus: 'Saiyan Leg Power',
+            exercises: [
+              { name: 'Bulgarian Split Squats (Chair)', animType: 'lunge', baseSets: 4, baseReps: 14, targetText: 'Quads, Glutes, Hamstrings', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves'], tip: 'Place rear foot on chair and lower straight down into front leg.', startCue: 'Rear foot resting on chair behind you, front foot planted forward.', peakCue: 'Front thigh near parallel, torso upright, front knee stable.' },
+              { name: 'Explosive Jump Squats', animType: 'squat', baseSets: 4, baseReps: 15, targetText: 'Quads, Glutes, Calves', primary: ['quads', 'calves'], secondary: ['glutes'], tip: 'Load hips smoothly and jump vertically with soft landings.', startCue: 'Athletic stance, feet shoulder-width.', peakCue: 'Full hip/ankle extension at jump peak and cushioned landing.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'zoro',
+        name: 'Roronoa Zoro',
+        anime: 'One Piece',
+        physiqueTitle: 'Three-Sword Upper Power',
+        goalCategory: 'Brute Strength',
+        accent: '#22c55e',
+        badgeClass: 'bg-green-500/15 text-green-300 border-green-500/30',
+        muscles: ['Biceps & Forearms', 'Broad Chest', 'Upper Back', 'Obliques'],
+        description: 'Heavy upper-body and grip-focused home routine for thick arms, broad chest, strong back, and rotational core power.',
+        homeGearTip: 'Backpack loaded with heavy books or water bottles.',
+        backdropScene: 'harborDusk',
+        style3D: { skin: 0xc99373, hair: 0x15803d, top: 0xc99373, pants: 0x14532d, accent: 0x22c55e, bulk: 1.15, hairStyle: 'shortSpiky', outfit: 'haramaki', jawline: 1.13 },
+        workouts: [
+          {
+            focus: 'Santoryu Arms & Chest',
+            exercises: [
+              { name: 'Heavy Backpack Bicep Curls', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Biceps, Forearms', primary: ['biceps', 'forearms'], secondary: [], tip: 'Hold top strap of loaded backpack; keep elbows pinned at sides.', startCue: 'Standing tall, elbows tucked against ribs, gripping pack strap.', peakCue: 'Full bicep contraction at top without swinging torso.' },
+              { name: 'Paused Wide Push-Ups (2s Hold)', animType: 'pushup', baseSets: 4, baseReps: 15, targetText: 'Outer Chest, Shoulders, Triceps', primary: ['chest'], secondary: ['shoulders', 'triceps'], tip: 'Pause 2 full seconds at bottom before pressing back up.', startCue: 'Hands slightly wider than shoulder-width in plank.', peakCue: '2-second pause near bottom with chest tension maintained.' },
+              { name: 'Single-Arm Backpack Rows', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Lats, Upper Back, Biceps', primary: ['lats', 'traps'], secondary: ['biceps', 'forearms'], tip: 'Brace one hand on a chair and row the heavy bag toward hip.', startCue: 'One hand and knee/foot braced on chair, back flat.', peakCue: 'Pulling bag toward hip pocket with shoulder blade retraction.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'asta',
+        name: 'Asta',
+        anime: 'Black Clover',
+        physiqueTitle: 'Compact Anti-Magic Muscle',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#a855f7',
+        badgeClass: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+        muscles: ['Compact Upper Body', 'Relentless Stamina', 'Explosive Hips', 'Abs'],
+        description: 'High-work-capacity bodyweight training built for dense, compact muscle, core endurance, and explosive athleticism.',
+        homeGearTip: '100% bodyweight! Pure floor grit.',
+        backdropScene: 'stoneKeep',
+        style3D: { skin: 0xd4a88c, hair: 0x94a3b8, top: 0x18181b, pants: 0x18181b, accent: 0xa855f7, bulk: 1.12, hairStyle: 'spiky', outfit: 'blackbull', jawline: 1.09 },
+        workouts: [
+          {
+            focus: 'Anti-Magic Push & Stamina',
+            exercises: [
+              { name: 'Dive Bomber Push-Ups', animType: 'pike', baseSets: 4, baseReps: 12, targetText: 'Chest, Shoulders, Triceps, Back', primary: ['chest', 'shoulders'], secondary: ['triceps', 'lowerBack'], tip: 'Swoop chest low between hands into extension, then reverse smoothly.', startCue: 'Piked stance with hands wide and core braced.', peakCue: 'Chest sweeping close to floor into upward press.' },
+              { name: 'Burpee Broad Jumps', animType: 'burpee', baseSets: 4, baseReps: 10, targetText: 'Full Body, Quads, Glutes, Core', primary: ['quads', 'glutes', 'chest'], secondary: ['abs', 'calves'], tip: 'Complete a clean burpee and leap forward with balanced landing.', startCue: 'Feet hip-width in athletic ready stance.', peakCue: 'Explosive forward jump landing softly in quarter-squat.' },
+              { name: 'V-Ups & Flutter Kicks', animType: 'legraise', baseSets: 4, baseReps: 20, targetText: 'Six-Pack Abs, Hip Flexors', primary: ['abs'], secondary: ['obliques'], tip: 'Keep lower back anchored and maintain steady abdominal tension.', startCue: 'Supine on floor with legs straight.', peakCue: 'Controlled core crunch with legs lifted and engaged.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'levi',
+        name: 'Levi Ackerman',
+        anime: 'Attack on Titan',
+        physiqueTitle: 'ODM Gear Core & Agility',
+        goalCategory: 'Agility & Core',
+        accent: '#06b6d4',
+        badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        muscles: ['Razor-Sharp Core', 'Hip Flexors', 'Agile Calves', 'Back Control'],
+        description: 'Precision bodyweight control emphasizing core stability, hip flexor strength, clean calisthenics, and rapid agility.',
+        homeGearTip: 'Two sturdy chairs (or floor books) for L-sits.',
+        backdropScene: 'industrialCitadel',
+        style3D: { skin: 0xdcb9a5, hair: 0x0f172a, top: 0x5c2d16, pants: 0xe2e8f0, accent: 0x06b6d4, bulk: 0.98, hairStyle: 'undercut', outfit: 'scout', jawline: 1.07 },
+        workouts: [
+          {
+            focus: 'ODM Core & Aerial Control',
+            exercises: [
+              { name: 'Chair / Floor L-Sit Hold', animType: 'dips', baseSets: 4, baseReps: '20s', targetText: 'Abs, Hip Flexors, Triceps, Shoulders', primary: ['abs'], secondary: ['triceps', 'shoulders', 'quads'], tip: 'Press hands down, depress shoulders, and hold legs straight out.', startCue: 'Hands gripping chair seats or floor supports, shoulders down.', peakCue: 'Hips and straight legs lifted cleanly off support.' },
+              { name: 'Lying Leg Raises + Hip Lift', animType: 'legraise', baseSets: 4, baseReps: 16, targetText: 'Lower Abs, Obliques', primary: ['abs'], secondary: ['obliques'], tip: 'Raise legs under control and lift hips slightly without momentum.', startCue: 'Lying flat with hands beside hips for stability.', peakCue: 'Legs vertical with controlled hip lift engaging lower abs.' },
+              { name: 'Explosive Tuck Jumps', animType: 'squat', baseSets: 4, baseReps: 12, targetText: 'Quads, Calves, Core Snap', primary: ['quads', 'calves'], secondary: ['abs', 'glutes'], tip: 'Drive knees up smoothly mid-air and land softly on balls of feet.', startCue: 'Feet shoulder-width, knees slightly bent.', peakCue: 'Knees tucked toward chest at peak height with soft landing.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'yami',
+        name: 'Yami Sukehiro',
+        anime: 'Black Clover',
+        physiqueTitle: 'Heavy Broad Frame',
+        goalCategory: 'Brute Strength',
+        accent: '#6366f1',
+        badgeClass: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+        muscles: ['Massive Chest', 'Thick Traps & Back', 'Heavy Shoulders', 'Legs'],
+        description: 'No-nonsense, high-tension home routine using slow eccentrics and loaded backpack work for a broad, rugged frame.',
+        homeGearTip: 'Heavy loaded backpack or duffel bag.',
+        backdropScene: 'midnightCourtyard',
+        style3D: { skin: 0xc48a68, hair: 0x090c14, top: 0xe2e8f0, pants: 0x1e1b4b, accent: 0x6366f1, bulk: 1.19, hairStyle: 'sweptBack', outfit: 'tank', jawline: 1.15 },
+        workouts: [
+          {
+            focus: 'Dark Cloaked Heavy Press & Back',
+            exercises: [
+              { name: 'Slow-Tempo Push-Ups (4s Down)', animType: 'pushup', baseSets: 4, baseReps: 14, targetText: 'Chest Thickness, Triceps, Front Delts', primary: ['chest', 'triceps'], secondary: ['shoulders'], tip: 'Lower over 4 full seconds, pause briefly, then press up with authority.', startCue: 'Rigid high plank with hands shoulder-width.', peakCue: '4-second controlled descent to bottom position without losing core.' },
+              { name: 'Two-Hand Heavy Backpack Rows', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Upper Back, Traps, Lats, Forearms', primary: ['traps', 'lats'], secondary: ['biceps', 'forearms'], tip: 'Hinge hips back and row heavy bag toward lower ribs.', startCue: 'Hips hinged back, neutral spine, gripping loaded bag.', peakCue: 'Upper back and lats contracted with elbows pulled back.' },
+              { name: 'Deep Tempo Backpack Squats', animType: 'squat', baseSets: 4, baseReps: 18, targetText: 'Quads, Glutes, Core', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'abs'], tip: '3 seconds down, 1-second pause at bottom, drive up.', startCue: 'Feet shoulder-width holding backpack securely.', peakCue: 'Deep squat bottom pause with braced core and upright chest.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'garou',
+        name: 'Garou',
+        anime: 'One Punch Man',
+        physiqueTitle: 'Hero Hunter Martial Flow',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#f43f5e',
+        badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        muscles: ['Cobra Back Detail', 'Fluid Mobility', 'Lean Chest', 'Obliques'],
+        description: 'Martial flow, back definition, and controlled rotational movement built through bodyweight and sliding towel work.',
+        homeGearTip: 'Small bath towel on smooth floor for sliding lat pulls.',
+        backdropScene: 'nightAlley',
+        style3D: { skin: 0xd1a284, hair: 0xcbd5e1, top: 0x090c14, pants: 0x1e293b, accent: 0xf43f5e, bulk: 1.09, hairStyle: 'horns', outfit: 'compression', jawline: 1.11 },
+        workouts: [
+          {
+            focus: 'Water Stream Back & Flow',
+            exercises: [
+              { name: 'Hindu Flowing Push-Ups', animType: 'pike', baseSets: 4, baseReps: 14, targetText: 'Chest, Shoulders, Spine Mobility', primary: ['chest', 'shoulders'], secondary: ['triceps', 'lowerBack'], tip: 'Flow smoothly through a controlled arc without snapping the lower back.', startCue: 'Inverted pike position with hands firm on floor.', peakCue: 'Smooth sweep through bottom into chest-open extension.' },
+              { name: 'Sliding Towel Lat Pull-Downs', animType: 'pull', baseSets: 4, baseReps: 12, targetText: 'Lats, Rear Delts, Lower Back', primary: ['lats'], secondary: ['traps', 'shoulders'], tip: 'Lie face down, reach arms forward on towel, pull elbows to ribs.', startCue: 'Prone on smooth floor with hands on towel.', peakCue: 'Pulling elbows back and down to engage lats and mid-back.' },
+              { name: 'Shadow-Counter Martial Combos', animType: 'box', baseSets: 4, baseReps: '60s', targetText: 'Obliques, Shoulders, Cardio', primary: ['obliques', 'shoulders'], secondary: ['triceps', 'calves'], tip: 'Weave smoothly from side to side and deliver crisp counters.', startCue: 'Balanced martial guard with knees relaxed.', peakCue: 'Fluid lateral slip into controlled straight/hook strike.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'tengen',
+        name: 'Tengen Uzui',
+        anime: 'Demon Slayer',
+        physiqueTitle: 'Flamboyant V-Taper & Speed',
+        goalCategory: 'Agility & Core',
+        accent: '#ec4899',
+        badgeClass: 'bg-pink-500/15 text-pink-300 border-pink-500/30',
+        muscles: ['Broad V-Taper Delts', 'Chiseled Abs', 'Shinobi Speed', 'Arms'],
+        description: 'Broad shoulder-to-waist taper, lateral deltoid work, push-up variations, and lateral agility bounds.',
+        homeGearTip: 'Two 1.5L water bottles for lateral shoulder raises.',
+        backdropScene: 'rooftopTwilight',
+        style3D: { skin: 0xc99677, hair: 0xe2e8f0, top: 0x171a26, pants: 0x171a26, accent: 0xec4899, bulk: 1.13, hairStyle: 'shinobi', outfit: 'sleeveless', jawline: 1.12 },
+        workouts: [
+          {
+            focus: 'Flamboyant V-Taper & Speed',
+            exercises: [
+              { name: 'Water Bottle Lateral Raises', animType: 'row', baseSets: 4, baseReps: 20, targetText: 'Side Shoulders (V-Taper Width), Traps', primary: ['shoulders'], secondary: ['traps'], tip: 'Raise arms out to the sides with slight elbow bend; avoid shrugging.', startCue: 'Standing tall holding water bottles at sides, core braced.', peakCue: 'Arms raised to shoulder height with controlled lowering.' },
+              { name: 'Wide-to-Narrow Push-Up Dropset', animType: 'pushup', baseSets: 4, baseReps: 16, targetText: 'Outer Chest, Inner Chest, Triceps', primary: ['chest', 'triceps'], secondary: ['shoulders'], tip: 'Perform wide push-ups followed immediately by close-grip push-ups.', startCue: 'Strict plank with hands set wide.', peakCue: 'Full-depth reps transitioning cleanly into narrow-grip reps.' },
+              { name: 'Shinobi Skater Sprint Bounds', animType: 'sprint', baseSets: 4, baseReps: '30s', targetText: 'Glutes, Quads, Calves, Agility', primary: ['glutes', 'calves'], secondary: ['quads', 'obliques'], tip: 'Bound laterally from side to side while sticking each landing with control.', startCue: 'Athletic stance with slight knee bend.', peakCue: 'Controlled lateral leap onto outside leg with glute/quad stabilization.' }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Map any date (YYYY-MM-DD) or cycle day to a structured home workout session with full calendar metadata
+    function getWorkoutSessionForDate(char, dateObj) {
+      const safeDate = dateObj instanceof Date && !isNaN(dateObj.getTime()) ? dateObj : new Date();
+      const year = safeDate.getFullYear();
+      const month = safeDate.getMonth(); // 0-11
+      const dayOfMonth = safeDate.getDate();
+
+      // Day of year (1..366)
+      const startOfYear = new Date(year, 0, 1);
+      const diffDays = Math.floor((safeDate - startOfYear) / 86400000);
+      const dayOfYear = diffDays + 1;
+      const weekOfYear = Math.min(53, Math.max(1, Math.ceil((dayOfYear + startOfYear.getDay()) / 7)));
+
+      // Cycle through character splits + progressive overload by week/month/year
+      const baseCount = char.workouts.length;
+      const cycleIndex = ((dayOfYear - 1) % baseCount + baseCount) % baseCount;
+      const template = char.workouts[cycleIndex];
+
+      const isMilestone = dayOfMonth % 7 === 0 || dayOfMonth === 28;
+      const overloadTier = ((weekOfYear - 1) % 4); // 0..3 progression wave
+      const weekBonus = overloadTier * 2 + (year - 2026 > 0 ? (year - 2026) * 2 : 0);
+
+      const scaledExercises = template.exercises.map(ex => {
+        if (typeof ex.baseReps === 'number') {
+          return { ...ex, baseReps: ex.baseReps + Math.max(0, weekBonus) };
+        }
+        return { ...ex };
+      });
+
+      const dateKey = formatDateKey(safeDate);
+      return {
+        date: safeDate,
+        dateKey,
+        year,
+        month,
+        dayOfMonth,
+        dayOfYear,
+        weekOfYear,
+        cycleDay: ((dayOfYear - 1) % 28) + 1,
+        isMilestone,
+        focusTitle: isMilestone ? `Weekly Checkpoint: ${template.focus}` : template.focus,
+        estMinutes: 12 + scaledExercises.length * 2 + overloadTier,
+        estKcal: 115 + scaledExercises.length * 18 + overloadTier * 10,
+        exercises: scaledExercises
+      };
+    }
+
+    function formatDateKey(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatDisplayDate(d) {
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+    }
+        ]
+      },
+      {
+        id: 'baki',
+        name: 'Baki Hanma',
+        anime: 'Baki',
+        physiqueTitle: 'Demon Back & Conditioning',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#ef4444',
+        badgeClass: 'bg-red-500/15 text-red-300 border-red-500/30',
+        muscles: ['Demon Back', 'Combat Core', 'Pistol Quads', 'Fighter Neck'],
+        description: 'Underground arena bodyweight mastery. Every muscle fiber is carved for balance, isometric tension, and explosive combat.',
+        homeGearTip: 'Zero equipment required—pure floor calisthenics.',
+        style3D: { skin: 0xd49672, hair: 0x5c2618, top: 0xd49672, pants: 0x991b1b, accent: 0xef4444, bulk: 1.12, hairStyle: 'shaggy', outfit: 'shirtless' },
+        workouts: [
+          {
+            focus: 'Demon Back & Push Tension',
+            exercises: [
+              { name: 'Archer Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 12, targetText: 'Chest, Shoulders, Triceps, Obliques', primary: ['chest', 'triceps'], secondary: ['shoulders', 'obliques'], tip: 'Extend one arm straight out while pressing with the working side.' },
+              { name: 'Superman Back Extensions (3s Hold)', animType: 'superman', baseSets: 4, baseReps: 15, targetText: 'Lats, Traps, Lower Back, Glutes', primary: ['lats', 'traps', 'lowerBack'], secondary: ['glutes'], tip: 'Lift chest and thighs off floor, pulling elbows back to carve the Demon Back.' },
+              { name: 'Diamond Push-Ups', animType: 'pushup', baseSets: 3, baseReps: 15, targetText: 'Triceps, Inner Chest', primary: ['triceps', 'chest'], secondary: ['shoulders'], tip: 'Form a diamond under your sternum and keep elbows tucked.' }
+            ]
+          },
+          {
+            focus: 'Arena Legs & Shadowboxing',
+            exercises: [
+              { name: 'Pistol Squats (Chair Assisted)', animType: 'squat', baseSets: 4, baseReps: 10, targetText: 'Quads, Glutes, Core Balance', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'abs'], tip: 'Lower slowly on one leg; lightly tap a chair if needed.' },
+              { name: 'Shadowboxing Speed Rounds', animType: 'box', baseSets: 4, baseReps: '60s', targetText: 'Shoulders, Obliques, Arms', primary: ['shoulders', 'obliques'], secondary: ['triceps', 'calves'], tip: 'Throw crisp jabs, crosses, and hooks with constant footwork.' },
+              { name: 'Dragon Flag Leg Lowers', animType: 'legraise', baseSets: 4, baseReps: 10, targetText: 'Six-Pack Abs, Obliques, Lats', primary: ['abs', 'obliques'], secondary: ['lats'], tip: 'Grip couch base behind head and lower rigid body under control.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'jinwoo',
+        name: 'Sung Jin-Woo',
+        anime: 'Solo Leveling',
+        physiqueTitle: 'Shadow Monarch Aesthetics',
+        goalCategory: 'Lean & Explosive',
+        accent: '#3b82f6',
+        badgeClass: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+        muscles: ['Full-Body Lean Tone', 'Six-Pack Abs', 'Stamina', 'Agility'],
+        description: 'The System Daily Quest transformed into a progressive home routine for a razor-sharp, aesthetic Shadow Monarch build.',
+        homeGearTip: 'Zero equipment needed—bedroom floor only.',
+        style3D: { skin: 0xe6bfa6, hair: 0x090d16, top: 0x0f172a, pants: 0x090d16, accent: 0x3b82f6, bulk: 1.02, hairStyle: 'sleek', outfit: 'monarch' },
+        workouts: [
+          {
+            focus: 'System Daily Quest Full Body',
+            exercises: [
+              { name: 'System Chest-to-Floor Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 20, targetText: 'Chest, Triceps, Front Shoulders', primary: ['chest', 'triceps'], secondary: ['shoulders', 'abs'], tip: 'Keep body in a rigid plank line from head to heels.' },
+              { name: 'System Core V-Ups', animType: 'legraise', baseSets: 4, baseReps: 20, targetText: 'Upper & Lower Abs, Obliques', primary: ['abs'], secondary: ['obliques'], tip: 'Reach hands to toes at the top and control the descent.' },
+              { name: 'System Deep Air Squats', animType: 'squat', baseSets: 4, baseReps: 25, targetText: 'Quads, Glutes, Hamstrings', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves'], tip: 'Sink hips below parallel and drive knees outward.' },
+              { name: 'Shadow Burpees', animType: 'burpee', baseSets: 3, baseReps: 12, targetText: 'Full Body, Quads, Chest, Core', primary: ['quads', 'chest', 'abs'], secondary: ['shoulders', 'calves'], tip: 'Smooth transition from plank push-up to vertical jump.' }
+            ]
+          },
+          {
+            focus: 'Monarch Core & Speed',
+            exercises: [
+              { name: 'Mountain Climber Sprints', animType: 'sprint', baseSets: 4, baseReps: '40s', targetText: 'Lower Abs, Hip Flexors, Shoulders', primary: ['abs'], secondary: ['shoulders', 'quads'], tip: 'Drive knees rapidly toward chest keeping hips low.' },
+              { name: 'Hollow Body Hold', animType: 'plank', baseSets: 4, baseReps: '40s', targetText: 'Deep Transverse Abs', primary: ['abs'], secondary: ['obliques', 'quads'], tip: 'Press lower back flat into floor with shoulders and heels raised.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'goku',
+        name: 'Son Goku',
+        anime: 'Dragon Ball',
+        physiqueTitle: 'Saiyan Martial Power',
+        goalCategory: 'Brute Strength',
+        accent: '#f97316',
+        badgeClass: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+        muscles: ['Thick Chest', 'Saiyan Shoulders', 'Power Quads', 'Core'],
+        description: '100x Gravity martial arts conditioning adapted for home. Combines heavy vertical pressing, explosive jumps, and martial stances.',
+        homeGearTip: 'Sturdy wall for pike/handstand push-ups and a chair for split squats.',
+        style3D: { skin: 0xdfa783, hair: 0x090d16, top: 0xea580c, pants: 0xea580c, accent: 0x3b82f6, bulk: 1.15, hairStyle: 'saiyan', outfit: 'gi' },
+        workouts: [
+          {
+            focus: '100x Gravity Upper Body',
+            exercises: [
+              { name: 'Wall Handstand / Steep Pike Push-Ups', animType: 'pike', baseSets: 4, baseReps: 10, targetText: 'Shoulders, Traps, Triceps', primary: ['shoulders', 'traps'], secondary: ['triceps', 'abs'], tip: 'Lower head toward a folded towel and press powerfully upward.' },
+              { name: 'Diamond Push-Ups', animType: 'pushup', baseSets: 4, baseReps: 16, targetText: 'Triceps, Inner Chest', primary: ['triceps', 'chest'], secondary: ['shoulders'], tip: 'Keep elbows tucked close to ribs.' },
+              { name: 'Plank-to-Pushup Up-Downs', animType: 'plank', baseSets: 3, baseReps: 16, targetText: 'Triceps, Shoulders, Core', primary: ['triceps', 'abs'], secondary: ['shoulders', 'chest'], tip: 'Alternate leading arms for unstoppable martial endurance.' }
+            ]
+          },
+          {
+            focus: 'Saiyan Leg Power',
+            exercises: [
+              { name: 'Bulgarian Split Squats (Chair)', animType: 'lunge', baseSets: 4, baseReps: 14, targetText: 'Quads, Glutes, Hamstrings', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'calves'], tip: 'Place rear foot on chair and sink deep into front leg.' },
+              { name: 'Explosive Jump Squats', animType: 'squat', baseSets: 4, baseReps: 15, targetText: 'Quads, Glutes, Calves', primary: ['quads', 'calves'], secondary: ['glutes'], tip: 'Launch upward as high as possible on every rep.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'zoro',
+        name: 'Roronoa Zoro',
+        anime: 'One Piece',
+        physiqueTitle: 'Three-Sword Upper Power',
+        goalCategory: 'Brute Strength',
+        accent: '#22c55e',
+        badgeClass: 'bg-green-500/15 text-green-300 border-green-500/30',
+        muscles: ['Biceps & Forearms', 'Broad Chest', 'Upper Back', 'Obliques'],
+        description: 'Built for wielding heavy blades with effortless power—thick arms, crushing grip, broad pecs, and rotational sword torque.',
+        homeGearTip: 'Backpack loaded with heavy books or water bottles.',
+        style3D: { skin: 0xdba584, hair: 0x22c55e, top: 0xdba584, pants: 0x14532d, accent: 0x22c55e, bulk: 1.14, hairStyle: 'shortSpiky', outfit: 'haramaki' },
+        workouts: [
+          {
+            focus: 'Santoryu Arms & Chest',
+            exercises: [
+              { name: 'Heavy Backpack Bicep Curls', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Biceps, Forearms', primary: ['biceps', 'forearms'], secondary: [], tip: 'Hold top strap of loaded backpack; keep elbows locked at sides.' },
+              { name: 'Paused Wide Push-Ups (2s Hold)', animType: 'pushup', baseSets: 4, baseReps: 15, targetText: 'Outer Chest, Shoulders, Triceps', primary: ['chest'], secondary: ['shoulders', 'triceps'], tip: 'Pause 2 full seconds at bottom like Zoro’s boulder training.' },
+              { name: 'Single-Arm Backpack Rows', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Lats, Upper Back, Biceps', primary: ['lats', 'traps'], secondary: ['biceps', 'forearms'], tip: 'Brace one hand on a chair and row the heavy bag to your hip.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'asta',
+        name: 'Asta',
+        anime: 'Black Clover',
+        physiqueTitle: 'Compact Anti-Magic Muscle',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#a855f7',
+        badgeClass: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+        muscles: ['Compact Upper Body', 'Relentless Stamina', 'Explosive Hips', 'Abs'],
+        description: '1,000 push-ups a day mindset. Packs dense, compact muscle onto every inch of your frame with relentless stamina.',
+        homeGearTip: '100% bodyweight! Pure floor grit.',
+        style3D: { skin: 0xe3b89c, hair: 0xcbd5e1, top: 0x18181b, pants: 0x18181b, accent: 0xa855f7, bulk: 1.10, hairStyle: 'spiky', outfit: 'blackbull' },
+        workouts: [
+          {
+            focus: 'Anti-Magic Push & Stamina',
+            exercises: [
+              { name: 'Dive Bomber Push-Ups', animType: 'pike', baseSets: 4, baseReps: 12, targetText: 'Chest, Shoulders, Triceps, Back', primary: ['chest', 'shoulders'], secondary: ['triceps', 'lowerBack'], tip: 'Swoop chest low between hands into upward dog, then reverse back.' },
+              { name: 'Burpee Broad Jumps', animType: 'burpee', baseSets: 4, baseReps: 10, targetText: 'Full Body, Quads, Glutes, Core', primary: ['quads', 'glutes', 'chest'], secondary: ['abs', 'calves'], tip: 'Perform a clean burpee and leap forward explosively.' },
+              { name: 'V-Ups & Flutter Kicks', animType: 'legraise', baseSets: 4, baseReps: 20, targetText: 'Six-Pack Abs, Hip Flexors', primary: ['abs'], secondary: ['obliques'], tip: 'Press lower back down and move continuously.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'levi',
+        name: 'Levi Ackerman',
+        anime: 'Attack on Titan',
+        physiqueTitle: 'ODM Gear Core & Agility',
+        goalCategory: 'Agility & Core',
+        accent: '#06b6d4',
+        badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        muscles: ['Razor-Sharp Core', 'Hip Flexors', 'Agile Calves', 'Back Control'],
+        description: 'Humanity’s Strongest Soldier relies on total aerial body control, rapid rotational speed, and an indestructible core.',
+        homeGearTip: 'Two sturdy chairs (or floor books) for L-sits.',
+        style3D: { skin: 0xe8c8b5, hair: 0x0f172a, top: 0x78350f, pants: 0xf8fafc, accent: 0x06b6d4, bulk: 0.96, hairStyle: 'undercut', outfit: 'scout' },
+        workouts: [
+          {
+            focus: 'ODM Core & Aerial Control',
+            exercises: [
+              { name: 'Chair / Floor L-Sit Hold', animType: 'dips', baseSets: 4, baseReps: '20s', targetText: 'Abs, Hip Flexors, Triceps, Shoulders', primary: ['abs'], secondary: ['triceps', 'shoulders', 'quads'], tip: 'Press hands down, depress shoulders, and hold legs straight out.' },
+              { name: 'Lying Leg Raises + Hip Lift', animType: 'legraise', baseSets: 4, baseReps: 16, targetText: 'Lower Abs, Obliques', primary: ['abs'], secondary: ['obliques'], tip: 'Pop hips slightly off floor at the top for maximum lower-ab tension.' },
+              { name: 'Explosive Tuck Jumps', animType: 'squat', baseSets: 4, baseReps: 12, targetText: 'Quads, Calves, Core Snap', primary: ['quads', 'calves'], secondary: ['abs', 'glutes'], tip: 'Pull knees high to chest mid-air and land softly.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'yami',
+        name: 'Yami Sukehiro',
+        anime: 'Black Clover',
+        physiqueTitle: 'Heavy Broad Frame',
+        goalCategory: 'Brute Strength',
+        accent: '#6366f1',
+        badgeClass: 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30',
+        muscles: ['Massive Chest', 'Thick Traps & Back', 'Heavy Shoulders', 'Legs'],
+        description: 'Surpass your limits right here, right now. Built for a wide, imposing warrior frame using slow-tempo tension.',
+        homeGearTip: 'Heavy loaded backpack or duffel bag.',
+        style3D: { skin: 0xd19875, hair: 0x090d16, top: 0xf8fafc, pants: 0x1e1b4b, accent: 0x6366f1, bulk: 1.18, hairStyle: 'sweptBack', outfit: 'tank' },
+        workouts: [
+          {
+            focus: 'Dark Cloaked Heavy Press & Back',
+            exercises: [
+              { name: 'Slow-Tempo Push-Ups (4s Down)', animType: 'pushup', baseSets: 4, baseReps: 14, targetText: 'Chest Thickness, Triceps, Front Delts', primary: ['chest', 'triceps'], secondary: ['shoulders'], tip: 'Count 4 full seconds lowering your chest, then explode upward.' },
+              { name: 'Two-Hand Heavy Backpack Rows', animType: 'row', baseSets: 4, baseReps: 15, targetText: 'Upper Back, Traps, Lats, Forearms', primary: ['traps', 'lats'], secondary: ['biceps', 'forearms'], tip: 'Hinge hips back and row heavy bag into lower ribs.' },
+              { name: 'Deep Tempo Backpack Squats', animType: 'squat', baseSets: 4, baseReps: 18, targetText: 'Quads, Glutes, Core', primary: ['quads', 'glutes'], secondary: ['hamstrings', 'abs'], tip: '3 seconds down, 1-second pause at bottom, drive up.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'garou',
+        name: 'Garou',
+        anime: 'One Punch Man',
+        physiqueTitle: 'Hero Hunter Martial Flow',
+        goalCategory: 'Shredded Calisthenics',
+        accent: '#f43f5e',
+        badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        muscles: ['Cobra Back Detail', 'Fluid Mobility', 'Lean Chest', 'Obliques'],
+        description: 'Water Stream Rock Smashing Fist physique—shredded back musculature, extreme hip mobility, and fluid martial counters.',
+        homeGearTip: 'Small bath towel on smooth floor for sliding lat pulls.',
+        style3D: { skin: 0xdfb192, hair: 0xe2e8f0, top: 0x090d16, pants: 0x1e293b, accent: 0xf43f5e, bulk: 1.07, hairStyle: 'horns', outfit: 'compression' },
+        workouts: [
+          {
+            focus: 'Water Stream Back & Flow',
+            exercises: [
+              { name: 'Hindu Flowing Push-Ups', animType: 'pike', baseSets: 4, baseReps: 14, targetText: 'Chest, Shoulders, Spine Mobility', primary: ['chest', 'shoulders'], secondary: ['triceps', 'lowerBack'], tip: 'Flow smoothly from downward dog into cobra pose.' },
+              { name: 'Sliding Towel Lat Pull-Downs', animType: 'pull', baseSets: 4, baseReps: 12, targetText: 'Lats, Rear Delts, Lower Back', primary: ['lats'], secondary: ['traps', 'shoulders'], tip: 'Lie face down, reach arms forward on towel, pull elbows to ribs.' },
+              { name: 'Shadow-Counter Martial Combos', animType: 'box', baseSets: 4, baseReps: '60s', targetText: 'Obliques, Shoulders, Cardio', primary: ['obliques', 'shoulders'], secondary: ['triceps', 'calves'], tip: 'Slip left/right and counter with rapid palm strikes.' }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'tengen',
+        name: 'Tengen Uzui',
+        anime: 'Demon Slayer',
+        physiqueTitle: 'Flamboyant V-Taper & Speed',
+        goalCategory: 'Agility & Core',
+        accent: '#ec4899',
+        badgeClass: 'bg-pink-500/15 text-pink-300 border-pink-500/30',
+        muscles: ['Broad V-Taper Delts', 'Chiseled Abs', 'Shinobi Speed', 'Arms'],
+        description: 'Sound Hashira aesthetic physique: broad capped shoulders, a narrow waist, chiseled abs, and lightning-fast Shinobi footwork.',
+        homeGearTip: 'Two 1.5L water bottles for lateral shoulder raises.',
+        style3D: { skin: 0xdba888, hair: 0xf8fafc, top: 0x1e1b4b, pants: 0x1e1b4b, accent: 0xec4899, bulk: 1.11, hairStyle: 'shinobi', outfit: 'sleeveless' },
+        workouts: [
+          {
+            focus: 'Flamboyant V-Taper & Speed',
+            exercises: [
+              { name: 'Water Bottle Lateral Raises', animType: 'row', baseSets: 4, baseReps: 20, targetText: 'Side Shoulders (V-Taper Width), Traps', primary: ['shoulders'], secondary: ['traps'], tip: 'Lead with elbows and pinkies to widen your shoulder silhouette.' },
+              { name: 'Wide-to-Narrow Push-Up Dropset', animType: 'pushup', baseSets: 4, baseReps: 16, targetText: 'Outer Chest, Inner Chest, Triceps', primary: ['chest', 'triceps'], secondary: ['shoulders'], tip: '8 wide push-ups immediately followed by 8 close-grip push-ups.' },
+              { name: 'Shinobi Skater Sprint Bounds', animType: 'sprint', baseSets: 4, baseReps: '30s', targetText: 'Glutes, Quads, Calves, Agility', primary: ['glutes', 'calves'], secondary: ['quads', 'obliques'], tip: 'Bound laterally side-to-side as fast and wide as possible.' }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Generate 28-Day Structured Home Workout Schedule for any character
+    function get28DayPlanForCharacter(char) {
+      const days = [];
+      const baseCount = char.workouts.length;
+      for (let d = 1; d <= 28; d++) {
+        const weekNum = Math.ceil(d / 7);
+        const isMilestone = d % 7 === 0;
+        const template = char.workouts[(d - 1) % baseCount];
+        const weekBonus = (weekNum - 1) * 2; // Progressive overload every week!
+
+        const scaledExercises = template.exercises.map(ex => {
+          if (typeof ex.baseReps === 'number') {
+            return { ...ex, baseReps: ex.baseReps + weekBonus };
+          }
+          return { ...ex };
+        });
+
+        days.push({
+          day: d,
+          week: weekNum,
+          isMilestone,
+          focusTitle: isMilestone ? `Week ${weekNum} Boss Test: ${template.focus}` : template.focus,
+          estMinutes: 12 + scaledExercises.length * 2 + weekNum,
+          estKcal: 110 + scaledExercises.length * 18 + weekNum * 12,
+          exercises: scaledExercises
+        });
+      }
+      return days;
+    }
+
+    // =========================================================================
+    // 2. REALISTIC MATURE 3D WEBGL ANATOMICAL BUILDER, BACKDROPS & BIOMECHANICS
+    // =========================================================================
+    const characterThumbnailCache = {};
+
+    function addRealisticBackdropToScene(scene, backdropType, accentHex) {
+      // Dark atmospheric horizon & fog
+      scene.fog = new THREE.FogExp2(0x090b10, 0.085);
+
+      const envGroup = new THREE.Group();
+      const darkBuildingMat = new THREE.MeshStandardMaterial({ color: 0x101520, roughness: 0.85, metalness: 0.25 });
+      const pillarMat = new THREE.MeshStandardMaterial({ color: 0x182030, roughness: 0.75, metalness: 0.35 });
+      const glowStripMat = new THREE.MeshBasicMaterial({ color: accentHex });
+
+      // Background architectural silhouettes (urban buildings / dojo beams / stone monoliths)
+      for (let i = -3; i <= 3; i++) {
+        const h = 1.6 + Math.abs(Math.sin(i * 1.7)) * 2.2;
+        const bldg = new THREE.Mesh(new THREE.BoxGeometry(0.55, h, 0.45), darkBuildingMat);
+        bldg.position.set(i * 0.78, h * 0.5 - 0.2, -1.85 - (Math.abs(i) % 2) * 0.35);
+        envGroup.add(bldg);
+
+        if (Math.abs(i) % 2 === 1) {
+          const strip = new THREE.Mesh(new THREE.BoxGeometry(0.03, h * 0.55, 0.04), glowStripMat);
+          strip.position.set(bldg.position.x + 0.16, h * 0.45, bldg.position.z + 0.24);
+          envGroup.add(strip);
+        }
+      }
+
+      // Ground plane with subtle reflection/roughness
+      const floorMesh = new THREE.Mesh(
+        new THREE.CircleGeometry(4.5, 32),
+        new THREE.MeshStandardMaterial({ color: 0x0b0e16, roughness: 0.7, metalness: 0.2 })
+      );
+      floorMesh.rotation.x = -Math.PI / 2;
+      floorMesh.position.y = -0.01;
+      envGroup.add(floorMesh);
+
+      if (backdropType === 'dojoArena') {
+        for (let s of [-1, 1]) {
+          const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.09, 3.4, 12), pillarMat);
+          beam.position.set(s * 1.55, 1.6, -1.1);
+          envGroup.add(beam);
+        }
+      }
+
+      scene.add(envGroup);
+    }
+
+    function buildArticulated3DCharacter(charData) {
+      const s = charData.style3D;
+      const bulk = s.bulk || 1.0;
+      const jaw = s.jawline || 1.08;
+
+      const root = new THREE.Group();
+
+      // Realistic PBR Materials (mature skin & fabric roughness)
+      const skinMat = new THREE.MeshStandardMaterial({ color: s.skin, roughness: 0.48, metalness: 0.04 });
+      const topMat = new THREE.MeshStandardMaterial({ color: s.top, roughness: 0.62, metalness: 0.08 });
+      const pantsMat = new THREE.MeshStandardMaterial({ color: s.pants, roughness: 0.72, metalness: 0.05 });
+      const hairMat = new THREE.MeshStandardMaterial({ color: s.hair, roughness: 0.42, metalness: 0.12 });
+      const accentMat = new THREE.MeshStandardMaterial({ color: s.accent, emissive: s.accent, emissiveIntensity: 0.22, roughness: 0.35 });
+      const shoeMat = new THREE.MeshStandardMaterial({ color: 0x0c1018, roughness: 0.75 });
+
+      // Pelvis / Hips
+      const pelvis = new THREE.Group();
+      pelvis.position.set(0, 0.98, 0);
+      root.add(pelvis);
+
+      const hipMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.155 * bulk, 0.145 * bulk, 0.2, 18), pantsMat);
+      pelvis.add(hipMesh);
+
+      const beltMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16 * bulk, 0.16 * bulk, 0.06, 18), accentMat);
+      beltMesh.position.y = 0.08;
+      pelvis.add(beltMesh);
+
+      // Spine / Core
+      const spine = new THREE.Group();
+      spine.position.set(0, 0.1, 0);
+      pelvis.add(spine);
+
+      const absMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.185 * bulk, 0.15 * bulk, 0.25, 18), topMat);
+      absMesh.position.y = 0.125;
+      spine.add(absMesh);
+
+      // Subtle mature abdominal & oblique definition
+      if (s.outfit === 'shirtless' || s.outfit === 'compression' || s.outfit === 'haramaki') {
+        for (let row = 0; row < 3; row++) {
+          for (let side of [-1, 1]) {
+            const abPack = new THREE.Mesh(new THREE.SphereGeometry(0.033 * bulk, 12, 12), topMat);
+            abPack.scale.set(1.1, 0.85, 0.45);
+            abPack.position.set(side * 0.04 * bulk, 0.06 + row * 0.065, 0.142 * bulk);
+            spine.add(abPack);
+          }
+        }
+      }
+
+      // Upper Chest / Torso V-Taper
+      const chestGroup = new THREE.Group();
+      chestGroup.position.set(0, 0.25, 0);
+      spine.add(chestGroup);
+
+      const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.245 * bulk, 0.185 * bulk, 0.31, 20), topMat);
+      chestMesh.scale.set(1.06, 1, 0.72);
+      chestMesh.position.y = 0.155;
+      chestGroup.add(chestMesh);
+
+      // Pectoral sculpting
+      for (let side of [-1, 1]) {
+        const pec = new THREE.Mesh(new THREE.SphereGeometry(0.092 * bulk, 14, 14), topMat);
+        pec.scale.set(1.18, 0.82, 0.55);
+        pec.position.set(side * 0.085 * bulk, 0.195, 0.125 * bulk);
+        chestGroup.add(pec);
+      }
+
+      // Muscular Neck & Sharp Adult Head / Jawline
+      const headGroup = new THREE.Group();
+      headGroup.position.set(0, 0.33, 0);
+      chestGroup.add(headGroup);
+
+      const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.072 * bulk, 0.086 * bulk, 0.115, 14), skinMat);
+      neckMesh.position.y = 0.045;
+      headGroup.add(neckMesh);
+
+      // Trapezius slope into neck
+      for (let side of [-1, 1]) {
+        const trap = new THREE.Mesh(new THREE.CylinderGeometry(0.055 * bulk, 0.11 * bulk, 0.11, 12), skinMat);
+        trap.position.set(side * 0.11 * bulk, 0.02, -0.02);
+        trap.rotation.z = side * -0.55;
+        headGroup.add(trap);
+      }
+
+      if (s.outfit === 'scout') {
+        const cravat = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.12, 0.08), new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.7 }));
+        cravat.position.set(0, 0.01, 0.05);
+        headGroup.add(cravat);
+      }
+
+      // Cranium + Angular Jawline
+      const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.132, 22, 22), skinMat);
+      headMesh.scale.set(0.92 * jaw, 1.08, 0.98);
+      headMesh.position.y = 0.185;
+      headGroup.add(headMesh);
+
+      const jawMesh = new THREE.Mesh(new THREE.ConeGeometry(0.098 * jaw, 0.12, 6), skinMat);
+      jawMesh.rotation.x = Math.PI;
+      jawMesh.position.set(0, 0.125, 0.025);
+      headGroup.add(jawMesh);
+
+      // Subtle realistic brow line & focused eyes
+      const browMesh = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.016, 0.04), hairMat);
+      browMesh.position.set(0, 0.205, 0.115);
+      headGroup.add(browMesh);
+
+      for (let side of [-1, 1]) {
+        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.011, 0.014), accentMat);
+        eye.position.set(side * 0.044, 0.188, 0.12);
+        eye.rotation.z = side * -0.08;
+        headGroup.add(eye);
+      }
+
+      // Realistic layered hair (less toy-like, sharper angles)
+      const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.14, 20, 20, 0, Math.PI * 2, 0, Math.PI * 0.58), hairMat);
+      hairCap.position.set(0, 0.198, -0.01);
+      headGroup.add(hairCap);
+
+      if (s.hairStyle === 'saiyan' || s.hairStyle === 'spiky' || s.hairStyle === 'horns') {
+        const spikeCount = s.hairStyle === 'horns' ? 2 : 6;
+        for (let i = 0; i < spikeCount; i++) {
+          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.034, 0.135, 7), hairMat);
+          const angle = s.hairStyle === 'horns' ? (i === 0 ? -0.6 : 0.6) : ((i - 2.5) * 0.42);
+          spike.position.set(Math.sin(angle) * 0.125, 0.305, -0.02 + Math.cos(angle) * 0.035);
+          spike.rotation.z = -angle * 1.05;
+          spike.rotation.x = -0.25;
+          headGroup.add(spike);
+        }
+      }
+
+      if (charData.id === 'asta' || charData.id === 'tengen') {
+        const band = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.03, 20), accentMat);
+        band.position.set(0, 0.232, 0);
+        headGroup.add(band);
+      }
+
+      // Articulated Arm
+      function makeArm(side) {
+        const shoulderPivot = new THREE.Group();
+        shoulderPivot.position.set(side * 0.27 * bulk, 0.265, 0);
+        chestGroup.add(shoulderPivot);
+
+        const delt = new THREE.Mesh(new THREE.SphereGeometry(0.082 * bulk, 14, 14), s.outfit === 'compression' || s.outfit === 'gi' ? topMat : skinMat);
+        shoulderPivot.add(delt);
+
+        const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.064 * bulk, 0.054 * bulk, 0.26, 14), skinMat);
+        upperArm.position.y = -0.13;
+        shoulderPivot.add(upperArm);
+
+        const elbowPivot = new THREE.Group();
+        elbowPivot.position.set(0, -0.26, 0);
+        shoulderPivot.add(elbowPivot);
+
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.056 * bulk, 0.042 * bulk, 0.245, 14), skinMat);
+        forearm.position.y = -0.122;
+        elbowPivot.add(forearm);
+
+        const fist = new THREE.Mesh(new THREE.SphereGeometry(0.044 * bulk, 10, 10), skinMat);
+        fist.position.y = -0.255;
+        elbowPivot.add(fist);
+
+        return { shoulderPivot, elbowPivot };
+      }
+
+      // Articulated Leg
+      function makeLeg(side) {
+        const hipPivot = new THREE.Group();
+        hipPivot.position.set(side * 0.105 * bulk, -0.06, 0);
+        pelvis.add(hipPivot);
+
+        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.09 * bulk, 0.068 * bulk, 0.43, 14), pantsMat);
+        thigh.position.y = -0.215;
+        hipPivot.add(thigh);
+
+        const kneePivot = new THREE.Group();
+        kneePivot.position.set(0, -0.43, 0);
+        hipPivot.add(kneePivot);
+
+        const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.068 * bulk, 0.048 * bulk, 0.40, 14), pantsMat);
+        calf.position.y = -0.20;
+        kneePivot.add(calf);
+
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.065, 0.21), shoeMat);
+        shoe.position.set(0, -0.415, 0.045);
+        kneePivot.add(shoe);
+
+        return { hipPivot, kneePivot };
+      }
+
+      const leftArm = makeArm(-1);
+      const rightArm = makeArm(1);
+      const leftLeg = makeLeg(-1);
+      const rightLeg = makeLeg(1);
+
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.castShadow = true;
+          obj.receiveShadow = true;
+        }
+      });
+
+      return { root, pelvis, spine, chestGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg };
+    }
+        }
+      }
+
+      // Upper Chest / Torso V-Taper
+      const chestGroup = new THREE.Group();
+      chestGroup.position.set(0, 0.24, 0);
+      spine.add(chestGroup);
+
+      const chestMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.24 * bulk, 0.18 * bulk, 0.3, 18), topMat);
+      chestMesh.scale.set(1.05, 1, 0.72);
+      chestMesh.position.y = 0.15;
+      chestGroup.add(chestMesh);
+
+      // Sculpted Pectoral Plates
+      for (let side of [-1, 1]) {
+        const pec = new THREE.Mesh(new THREE.SphereGeometry(0.095 * bulk, 14, 14), topMat);
+        pec.scale.set(1.15, 0.85, 0.6);
+        pec.position.set(side * 0.085 * bulk, 0.19, 0.125 * bulk);
+        chestGroup.add(pec);
+      }
+
+      // Neck & Head
+      const headGroup = new THREE.Group();
+      headGroup.position.set(0, 0.32, 0);
+      chestGroup.add(headGroup);
+
+      const neckMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.065 * bulk, 0.075 * bulk, 0.1, 12), skinMat);
+      neckMesh.position.y = 0.04;
+      headGroup.add(neckMesh);
+
+      // Levi Cravat or Outfit Collar
+      if (s.outfit === 'scout') {
+        const cravat = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.12, 0.08), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+        cravat.position.set(0, 0.01, 0.05);
+        headGroup.add(cravat);
+      }
+
+      const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.135, 20, 20), skinMat);
+      headMesh.scale.set(0.92, 1.08, 0.96);
+      headMesh.position.y = 0.18;
+      headGroup.add(headMesh);
+
+      // Glowing Anime Eyes
+      for (let side of [-1, 1]) {
+        const eye = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.014, 0.015), accentMat);
+        eye.position.set(side * 0.046, 0.185, 0.122);
+        eye.rotation.z = side * -0.1;
+        headGroup.add(eye);
+      }
+
+      // Sculpted 3D Anime Hair & Headbands
+      const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.143, 18, 18, 0, Math.PI * 2, 0, Math.PI * 0.62), hairMat);
+      hairCap.position.set(0, 0.195, -0.01);
+      headGroup.add(hairCap);
+
+      if (s.hairStyle === 'saiyan' || s.hairStyle === 'spiky' || s.hairStyle === 'horns') {
+        const spikeCount = s.hairStyle === 'horns' ? 2 : 7;
+        for (let i = 0; i < spikeCount; i++) {
+          const spike = new THREE.Mesh(new THREE.ConeGeometry(0.042, 0.16, 8), hairMat);
+          const angle = s.hairStyle === 'horns' ? (i === 0 ? -0.65 : 0.65) : ((i - 3) * 0.36);
+          spike.position.set(Math.sin(angle) * 0.13, 0.31, -0.02 + Math.cos(angle) * 0.04);
+          spike.rotation.z = -angle * 1.1;
+          spike.rotation.x = -0.25;
+          headGroup.add(spike);
+        }
+      }
+
+      if (charData.id === 'asta' || charData.id === 'tengen') {
+        const band = new THREE.Mesh(new THREE.CylinderGeometry(0.144, 0.144, 0.036, 20), accentMat);
+        band.position.set(0, 0.235, 0);
+        headGroup.add(band);
+      }
+
+      // Helper to create articulated arm (Deltoid + Bicep/Tricep + Elbow + Forearm + Fist)
+      function makeArm(side) {
+        const shoulderPivot = new THREE.Group();
+        shoulderPivot.position.set(side * 0.265 * bulk, 0.26, 0);
+        chestGroup.add(shoulderPivot);
+
+        const delt = new THREE.Mesh(new THREE.SphereGeometry(0.082 * bulk, 14, 14), s.outfit === 'compression' || s.outfit === 'gi' ? topMat : skinMat);
+        shoulderPivot.add(delt);
+
+        const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.062 * bulk, 0.052 * bulk, 0.26, 12), skinMat);
+        upperArm.position.y = -0.13;
+        shoulderPivot.add(upperArm);
+
+        const elbowPivot = new THREE.Group();
+        elbowPivot.position.set(0, -0.26, 0);
+        shoulderPivot.add(elbowPivot);
+
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.052 * bulk, 0.04 * bulk, 0.24, 12), skinMat);
+        forearm.position.y = -0.12;
+        elbowPivot.add(forearm);
+
+        const fist = new THREE.Mesh(new THREE.SphereGeometry(0.045 * bulk, 10, 10), skinMat);
+        fist.position.y = -0.25;
+        elbowPivot.add(fist);
+
+        return { shoulderPivot, elbowPivot };
+      }
+
+      // Helper to create articulated leg (Quad + Knee + Calf + Shoe)
+      function makeLeg(side) {
+        const hipPivot = new THREE.Group();
+        hipPivot.position.set(side * 0.105 * bulk, -0.06, 0);
+        pelvis.add(hipPivot);
+
+        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.088 * bulk, 0.068 * bulk, 0.42, 14), pantsMat);
+        thigh.position.y = -0.21;
+        hipPivot.add(thigh);
+
+        const kneePivot = new THREE.Group();
+        kneePivot.position.set(0, -0.42, 0);
+        hipPivot.add(kneePivot);
+
+        const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.066 * bulk, 0.048 * bulk, 0.40, 14), pantsMat);
+        calf.position.y = -0.20;
+        kneePivot.add(calf);
+
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.065, 0.20), shoeMat);
+        shoe.position.set(0, -0.41, 0.045);
+        kneePivot.add(shoe);
+
+        return { hipPivot, kneePivot };
+      }
+
+      const leftArm = makeArm(-1);
+      const rightArm = makeArm(1);
+      const leftLeg = makeLeg(-1);
+      const rightLeg = makeLeg(1);
+
+      // Enable shadows on all meshes
+      root.traverse(obj => {
+        if (obj.isMesh) {
+          obj.castShadow = true;
+          obj.receiveShadow = true;
+        }
+      });
+
+      return {
+        root,
+        pelvis,
+        spine,
+        chestGroup,
+        headGroup,
+        leftArm,
+        rightArm,
+        leftLeg,
+        rightLeg
+      };
+    }
+
+    // Pose Biomechanics Animator for 3D Rig
+    function apply3DExercisePose(rig, animType, t, mode = 'exercise') {
+      // Reset neutral pose first
+      rig.root.position.set(0, 0, 0);
+      rig.root.rotation.set(0, 0, 0);
+      rig.pelvis.position.set(0, 0.96, 0);
+      rig.pelvis.rotation.set(0, 0, 0);
+      rig.spine.rotation.set(0, 0, 0);
+      rig.chestGroup.rotation.set(0, 0, 0);
+      rig.headGroup.rotation.set(0, 0, 0);
+
+      rig.leftArm.shoulderPivot.rotation.set(0, 0, 0.14);
+      rig.rightArm.shoulderPivot.rotation.set(0, 0, -0.14);
+      rig.leftArm.elbowPivot.rotation.set(0, 0, 0);
+      rig.rightArm.elbowPivot.rotation.set(0, 0, 0);
+
+      rig.leftLeg.hipPivot.rotation.set(0, 0, 0);
+      rig.rightLeg.hipPivot.rotation.set(0, 0, 0);
+      rig.leftLeg.kneePivot.rotation.set(0, 0, 0);
+      rig.rightLeg.kneePivot.rotation.set(0, 0, 0);
+
+      const wave = (Math.sin(t) + 1) / 2; // 0 -> 1 -> 0
+
+      if (mode === 'heroIdle') {
+        // Fighting stance breathing & subtle aura turn
+        const breathe = Math.sin(t * 0.8) * 0.03;
+        rig.chestGroup.rotation.x = breathe;
+        rig.leftArm.shoulderPivot.rotation.set(-0.35, 0, 0.25);
+        rig.rightArm.shoulderPivot.rotation.set(-0.25, 0, -0.25);
+        rig.leftArm.elbowPivot.rotation.x = -0.85;
+        rig.rightArm.elbowPivot.rotation.x = -0.75;
+        rig.leftLeg.hipPivot.rotation.set(-0.1, 0, 0.08);
+        rig.rightLeg.hipPivot.rotation.set(0.1, 0, -0.08);
+        return;
+      }
+
+      if (animType === 'pushup') {
+        // Horizontal plank push-up biomechanics
+        const dip = wave * 0.24;
+        rig.root.rotation.x = Math.PI / 2 - 0.14 + wave * 0.12;
+        rig.root.position.set(0, 0.42 - dip, -0.35);
+        rig.headGroup.rotation.x = -0.65;
+        rig.leftArm.shoulderPivot.rotation.set(-1.35 + wave * 0.45, 0, 0.35 + wave * 0.35);
+        rig.rightArm.shoulderPivot.rotation.set(-1.35 + wave * 0.45, 0, -0.35 - wave * 0.35);
+        rig.leftArm.elbowPivot.rotation.x = -0.2 - wave * 1.15;
+        rig.rightArm.elbowPivot.rotation.x = -0.2 - wave * 1.15;
+      } else if (animType === 'pike') {
+        // Inverted V Pike Shoulder Press
+        const press = wave * 0.22;
+        rig.pelvis.position.set(0, 0.92 - press * 0.3, -0.15);
+        rig.pelvis.rotation.x = 1.95;
+        rig.leftLeg.hipPivot.rotation.x = -0.95;
+        rig.rightLeg.hipPivot.rotation.x = -0.95;
+        rig.headGroup.rotation.x = -0.4;
+        rig.leftArm.shoulderPivot.rotation.set(-2.5 + wave * 0.5, 0, 0.3);
+        rig.rightArm.shoulderPivot.rotation.set(-2.5 + wave * 0.5, 0, -0.3);
+        rig.leftArm.elbowPivot.rotation.x = -0.2 - wave * 1.1;
+        rig.rightArm.elbowPivot.rotation.x = -0.2 - wave * 1.1;
+      } else if (animType === 'squat') {
+        // Deep Athletic Squat
+        const depth = wave * 1.25;
+        rig.pelvis.position.y = 0.96 - wave * 0.38;
+        rig.pelvis.position.z = -wave * 0.14;
+        rig.spine.rotation.x = wave * 0.32;
+        rig.leftLeg.hipPivot.rotation.set(-depth, 0, 0.12);
+        rig.rightLeg.hipPivot.rotation.set(-depth, 0, -0.12);
+        rig.leftLeg.kneePivot.rotation.x = depth * 1.85;
+        rig.rightLeg.kneePivot.rotation.x = depth * 1.85;
+        rig.leftArm.shoulderPivot.rotation.set(-wave * 1.35, 0, 0.15);
+        rig.rightArm.shoulderPivot.rotation.set(-wave * 1.35, 0, -0.15);
+      } else if (animType === 'lunge') {
+        // Alternating / Split Squat Lunge
+        const sink = wave * 0.95;
+        rig.pelvis.position.y = 0.96 - wave * 0.28;
+        rig.leftLeg.hipPivot.rotation.x = -0.55 - sink * 0.45;
+        rig.leftLeg.kneePivot.rotation.x = 0.7 + sink * 0.85;
+        rig.rightLeg.hipPivot.rotation.x = 0.55 + sink * 0.35;
+        rig.rightLeg.kneePivot.rotation.x = 0.6 + sink * 0.95;
+        rig.leftArm.shoulderPivot.rotation.x = 0.4;
+        rig.rightArm.shoulderPivot.rotation.x = -0.6;
+        rig.leftArm.elbowPivot.rotation.x = -0.9;
+        rig.rightArm.elbowPivot.rotation.x = -0.9;
+      } else if (animType === 'plank') {
+        // Isometric Plank / Shoulder Taps
+        const tap = Math.sin(t * 1.5);
+        rig.root.rotation.x = Math.PI / 2 - 0.12;
+        rig.root.position.set(0, 0.42, -0.35);
+        rig.headGroup.rotation.x = -0.65;
+        rig.leftArm.shoulderPivot.rotation.set(-1.35, 0, 0.2);
+        rig.rightArm.shoulderPivot.rotation.set(-1.35, 0, -0.2);
+        if (tap > 0.3) {
+          rig.rightArm.shoulderPivot.rotation.x = -0.5;
+          rig.rightArm.elbowPivot.rotation.x = -1.7;
+        } else if (tap < -0.3) {
+          rig.leftArm.shoulderPivot.rotation.x = -0.5;
+          rig.leftArm.elbowPivot.rotation.x = -1.7;
+        }
+      } else if (animType === 'legraise') {
+        // Lying Core Leg Raises / Dragon Flag
+        rig.root.rotation.x = -Math.PI / 2;
+        rig.root.position.set(0, 0.16, -0.35);
+        rig.spine.rotation.x = wave * 0.25;
+        rig.leftLeg.hipPivot.rotation.x = -0.15 - wave * 1.35;
+        rig.rightLeg.hipPivot.rotation.x = -0.15 - wave * 1.35;
+        rig.leftArm.shoulderPivot.rotation.x = -2.6;
+        rig.rightArm.shoulderPivot.rotation.x = -2.6;
+      } else if (animType === 'row') {
+        // Bent-over Row / Curls
+        rig.spine.rotation.x = 0.65;
+        rig.pelvis.position.y = 0.92;
+        rig.leftLeg.hipPivot.rotation.x = -0.25;
+        rig.rightLeg.hipPivot.rotation.x = -0.25;
+        rig.leftLeg.kneePivot.rotation.x = 0.45;
+        rig.rightLeg.kneePivot.rotation.x = 0.45;
+        rig.leftArm.shoulderPivot.rotation.x = -0.6 + wave * 0.85;
+        rig.rightArm.shoulderPivot.rotation.x = -0.6 + wave * 0.85;
+        rig.leftArm.elbowPivot.rotation.x = -0.2 - wave * 1.45;
+        rig.rightArm.elbowPivot.rotation.x = -0.2 - wave * 1.45;
+      } else if (animType === 'pull' || animType === 'superman') {
+        // Prone Superman / Towel Lat Pull
+        rig.root.rotation.x = Math.PI / 2;
+        rig.root.position.set(0, 0.16, -0.35);
+        rig.spine.rotation.x = -wave * 0.35;
+        rig.leftLeg.hipPivot.rotation.x = wave * 0.3;
+        rig.rightLeg.hipPivot.rotation.x = wave * 0.3;
+        rig.leftArm.shoulderPivot.rotation.set(-2.7 + wave * 1.2, 0, 0.35);
+        rig.rightArm.shoulderPivot.rotation.set(-2.7 + wave * 1.2, 0, -0.35);
+        rig.leftArm.elbowPivot.rotation.x = -wave * 1.2;
+        rig.rightArm.elbowPivot.rotation.x = -wave * 1.2;
+      } else if (animType === 'dips') {
+        // Chair Tricep Dips / L-Sit
+        rig.pelvis.position.set(0, 0.68 - wave * 0.18, 0.15);
+        rig.leftLeg.hipPivot.rotation.x = -1.25;
+        rig.rightLeg.hipPivot.rotation.x = -1.25;
+        rig.leftLeg.kneePivot.rotation.x = 1.15;
+        rig.rightLeg.kneePivot.rotation.x = 1.15;
+        rig.leftArm.shoulderPivot.rotation.set(0.55 + wave * 0.35, 0, 0.25);
+        rig.rightArm.shoulderPivot.rotation.set(0.55 + wave * 0.35, 0, -0.25);
+        rig.leftArm.elbowPivot.rotation.x = -0.25 - wave * 1.15;
+        rig.rightArm.elbowPivot.rotation.x = -0.25 - wave * 1.15;
+      } else if (animType === 'sprint' || animType === 'burpee') {
+        // Explosive High-Knee Sprint / Burpee Jump
+        const run = Math.sin(t * 2.2);
+        const hop = Math.abs(Math.cos(t * 2.2)) * 0.14;
+        rig.pelvis.position.y = 0.96 + hop;
+        rig.spine.rotation.x = 0.18;
+        rig.leftLeg.hipPivot.rotation.x = run * 0.95;
+        rig.rightLeg.hipPivot.rotation.x = -run * 0.95;
+        rig.leftLeg.kneePivot.rotation.x = Math.max(0.1, -run * 1.2 + 0.6);
+        rig.rightLeg.kneePivot.rotation.x = Math.max(0.1, run * 1.2 + 0.6);
+        rig.leftArm.shoulderPivot.rotation.x = -run * 0.9;
+        rig.rightArm.shoulderPivot.rotation.x = run * 0.9;
+        rig.leftArm.elbowPivot.rotation.x = -1.3;
+        rig.rightArm.elbowPivot.rotation.x = -1.3;
+      } else {
+        // Shadowboxing Combat Combos
+        const punch = Math.sin(t * 2.0);
+        rig.chestGroup.rotation.y = punch * 0.35;
+        rig.leftLeg.hipPivot.rotation.x = -0.25;
+        rig.rightLeg.hipPivot.rotation.x = 0.25;
+        rig.leftLeg.kneePivot.rotation.x = 0.3;
+        rig.rightLeg.kneePivot.rotation.x = 0.3;
+        rig.leftArm.shoulderPivot.rotation.set(-1.35 + Math.max(0, -punch) * 0.6, 0, 0.2);
+        rig.rightArm.shoulderPivot.rotation.set(-1.35 + Math.max(0, punch) * 0.6, 0, -0.2);
+        rig.leftArm.elbowPivot.rotation.x = punch > 0 ? -0.15 : -1.55;
+        rig.rightArm.elbowPivot.rotation.x = punch < 0 ? -0.15 : -1.55;
+      }
+    }
+
+    // Generate crisp high-res 3D WebGL portrait PNG snapshots for all 10 characters using ONE shared offscreen renderer (prevents WebGL context exhaustion!)
+    function generateAllCharacter3DThumbnails() {
+      const width = 420;
+      const height = 420;
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+      renderer.setSize(width, height);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.18;
+
+      charactersData.forEach(char => {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 25);
+        camera.position.set(0.32, 1.44, 1.62);
+        camera.lookAt(0, 1.32, 0);
+
+        // Gritty low-key dramatic lighting inspired by mature character portrait
+        scene.add(new THREE.AmbientLight(0x94a3b8, 0.42));
+        const keyLight = new THREE.DirectionalLight(0xfff7ed, 1.35);
+        keyLight.position.set(1.6, 2.8, 2.0);
+        scene.add(keyLight);
+
+        const rimLight = new THREE.PointLight(char.style3D.accent, 2.6, 7);
+        rimLight.position.set(-1.3, 1.8, -1.1);
+        scene.add(rimLight);
+
+        addRealisticBackdropToScene(scene, char.backdropScene, char.style3D.accent);
+
+        const rig = buildArticulated3DCharacter(char);
+        apply3DExercisePose(rig, 'idle', 0.4, 'heroIdle');
+        rig.root.rotation.y = -0.22;
+        scene.add(rig.root);
+
+        renderer.render(scene, camera);
+        characterThumbnailCache[char.id] = renderer.domElement.toDataURL('image/png');
+      });
+
+      renderer.dispose();
+    }
+
+    class Live3DViewportController {
+      constructor(canvasId, options = {}) {
+        this.canvas = document.getElementById(canvasId);
+        this.mode = options.mode || 'exercise';
+        this.orbitEnabled = !!options.orbitEnabled;
+        this.renderer = null;
+        this.scene = null;
+        this.camera = null;
+        this.rig = null;
+        this.currentCharId = null;
+        this.animType = 'pushup';
+        this.clock = 0;
+        this.azimuth = 0.65;
+        this.polar = 1.22;
+        this.distance = options.distance || 2.85;
+        this.targetY = options.targetY || 0.72;
+        this.isDragging = false;
+        this.lastX = 0;
+        this.lastY = 0;
+
+        this.init();
+      }
+
+      init() {
+        if (!this.canvas) return;
+        this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.15;
+
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(40, 1.33, 0.1, 30);
+
+        this.scene.add(new THREE.AmbientLight(0xcbd5e1, 0.52));
+        const dirLight = new THREE.DirectionalLight(0xfff7ed, 1.3);
+        dirLight.position.set(2.5, 4, 2.5);
+        this.scene.add(dirLight);
+
+        this.rimLight = new THREE.PointLight(0x6366f1, 2.2, 8);
+        this.rimLight.position.set(-2, 2.2, -2);
+        this.scene.add(this.rimLight);
+
+        if (this.mode === 'exercise') {
+          const grid = new THREE.GridHelper(4.2, 14, 0x334155, 0x1e293b);
+          grid.position.y = 0;
+          this.scene.add(grid);
+
+          const matGeo = new THREE.BoxGeometry(1.1, 0.02, 2.1);
+          const matMesh = new THREE.Mesh(matGeo, new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.85 }));
+          matMesh.position.y = 0.01;
+          this.scene.add(matMesh);
+        }
+
+        if (this.orbitEnabled) {
+          const wrapper = this.canvas.parentElement;
+          const onDown = (x, y) => { this.isDragging = true; this.lastX = x; this.lastY = y; };
+          const onMove = (x, y) => {
+            if (!this.isDragging) return;
+            this.azimuth -= (x - this.lastX) * 0.01;
+            this.polar = Math.max(0.45, Math.min(1.52, this.polar - (y - this.lastY) * 0.008));
+            this.lastX = x;
+            this.lastY = y;
+          };
+          const onUp = () => { this.isDragging = false; };
+
+          wrapper.addEventListener('mousedown', e => onDown(e.clientX, e.clientY));
+          window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+          window.addEventListener('mouseup', onUp);
+
+          wrapper.addEventListener('touchstart', e => {
+            if (e.touches.length === 1) onDown(e.touches[0].clientX, e.touches[0].clientY);
+          }, { passive: true });
+          wrapper.addEventListener('touchmove', e => {
+            if (e.touches.length === 1) onMove(e.touches[0].clientX, e.touches[0].clientY);
+          }, { passive: true });
+          wrapper.addEventListener('touchend', onUp);
+        }
+      }
+
+      setCharacter(charId) {
+        if (this.currentCharId === charId && this.rig) return;
+        this.currentCharId = charId;
+        const char = charactersData.find(c => c.id === charId) || charactersData[0];
+
+        if (this.rig) {
+          this.scene.remove(this.rig.root);
+        }
+        this.rig = buildArticulated3DCharacter(char);
+        this.scene.add(this.rig.root);
+        if (this.rimLight) this.rimLight.color.setHex(char.style3D.accent);
+      }
+
+      setCameraPreset(preset) {
+        if (preset === 'front') { this.azimuth = 0.0; this.polar = 1.28; }
+        else if (preset === 'side') { this.azimuth = Math.PI / 2; this.polar = 1.28; }
+        else { this.azimuth = 0.68; this.polar = 1.20; }
+      }
+
+      renderStep(speedMult) {
+        if (!this.canvas || !this.renderer || !this.rig) return;
+        const rect = this.canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const w = Math.floor(rect.width);
+        const h = Math.floor(rect.height);
+        if (this.canvas.width !== w || this.canvas.height !== h) {
+          this.renderer.setSize(w, h, false);
+          this.camera.aspect = w / h;
+          this.camera.updateProjectionMatrix();
+        }
+
+        this.clock += 0.055 * speedMult;
+
+        if (this.mode === 'heroIdle') {
+          apply3DExercisePose(this.rig, 'idle', this.clock, 'heroIdle');
+          this.rig.root.rotation.y = Math.sin(this.clock * 0.35) * 0.42;
+          this.camera.position.set(0, 1.16, 2.5);
+          this.camera.lookAt(0, 1.02, 0);
+        } else {
+          apply3DExercisePose(this.rig, this.animType, this.clock, 'exercise');
+          const cx = Math.sin(this.azimuth) * Math.sin(this.polar) * this.distance;
+          const cy = Math.cos(this.polar) * this.distance + 0.55;
+          const cz = Math.cos(this.azimuth) * Math.sin(this.polar) * this.distance;
+          this.camera.position.set(cx, cy, cz);
+          this.camera.lookAt(0, this.targetY, 0);
+        }
+
+        this.renderer.render(this.scene, this.camera);
+      }
+    }
+
+    let hero3DView, backdrop3DView, preview3DView, player3DView;
+    let speed3DMultiplier = 1.0;
+
+    function toggle3DSpeed() {
+      speed3DMultiplier = speed3DMultiplier === 1.0 ? 0.5 : 1.0;
+      const btn = document.getElementById('previewSpeedBtn');
+      if (btn) btn.textContent = speed3DMultiplier === 1.0 ? '1.0x' : '0.5x';
+      showToast(speed3DMultiplier === 1.0 ? '3D Form Speed: 1.0x Normal' : '3D Form Speed: 0.5x Slow-Motion');
+    }
+
+    function setPreviewCameraPreset(preset) {
+      if (preview3DView) preview3DView.setCameraPreset(preset);
+    }
+
+    function startMaster3DLoop() {
+      function loop() {
+        if (!document.getElementById('rosterView').classList.contains('hidden')) {
+          if (hero3DView) hero3DView.renderStep(1.0);
+        }
+        if (!document.getElementById('mapStudioView').classList.contains('hidden')) {
+          if (backdrop3DView) backdrop3DView.renderStep(0.8);
+          if (preview3DView) preview3DView.renderStep(speed3DMultiplier);
+        }
+        if (!document.getElementById('guidedPlayerModal').classList.contains('hidden')) {
+          if (player3DView) player3DView.renderStep(speed3DMultiplier);
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    }
+
+    // =========================================================================
+    // 4. STATE, AUTHENTICATION, LEVEL SCALING & FULL YEAR/MONTH/WEEK/DAY CALENDAR
+    // =========================================================================
+    const USERS_KEY = 'abw3d_users_v1';
+    const ACTIVE_USER_KEY = 'abw3d_active_user_v1';
+    const COMPLETED_DAYS_KEY = 'abw3d_completed_days_v1';
+    const LEVEL_KEY = 'abw3d_level_v1';
+
+    let usersDB = JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
+    let activeUser = JSON.parse(localStorage.getItem(ACTIVE_USER_KEY) || 'null');
+    let completedDaysMap = JSON.parse(localStorage.getItem(COMPLETED_DAYS_KEY) || '{}');
+    let globalLevel = (activeUser && activeUser.level) || localStorage.getItem(LEVEL_KEY) || 'Intermediate';
+
+    let activeGoalFilter = 'All';
+    let searchQuery = '';
+    let selectedCharId = (activeUser && activeUser.targetCharId) || 'toji';
+
+    // Calendar State (Years, Months, Weeks & Days)
+    const nowDate = new Date();
+    let calendarViewMode = 'month'; // 'month' | 'week' | 'year'
+    let calendarYear = nowDate.getFullYear();
+    let calendarMonth = nowDate.getMonth(); // 0..11
+    let selectedDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate());
+    let selectedPreviewExIdx = 0;
+    let activeCardTabs = {}; // { [exerciseIndex]: 'how' | 'muscles' }
+
+    // Guided Player State
+    let playerExIdx = 0;
+    let readyTimer = null;
+    let readySec = 5;
+    let restTimer = null;
+    let restSec = 30;
+    let isVoiceMuted = false;
+
+    function getScaledExercisePrescription(ex) {
+      const mult = globalLevel === 'Beginner' ? 0.7 : globalLevel === 'Extreme' ? 1.5 : 1.0;
+      const setDelta = globalLevel === 'Beginner' ? -1 : globalLevel === 'Extreme' ? 1 : 0;
+      const restSec = globalLevel === 'Beginner' ? 45 : globalLevel === 'Extreme' ? 20 : 30;
+
+      const sets = Math.max(2, ex.baseSets + setDelta);
+      let repsLabel = '';
+      if (typeof ex.baseReps === 'string' && ex.baseReps.endsWith('s')) {
+        const sec = Math.max(15, Math.round(parseInt(ex.baseReps) * mult));
+        repsLabel = `${sec} SEC`;
+      } else {
+        const reps = Math.max(6, Math.round(ex.baseReps * mult));
+        repsLabel = `${reps} REPS`;
+      }
+
+      return {
+        sets,
+        repsLabel,
+        fullPrescription: `${sets} × ${repsLabel}`,
+        restSec
+      };
+    }
+
+    function setGlobalLevel(lvl) {
+      globalLevel = lvl;
+      localStorage.setItem(LEVEL_KEY, lvl);
+      if (activeUser) {
+        activeUser.level = lvl;
+        usersDB[activeUser.email] = activeUser;
+        localStorage.setItem(USERS_KEY, JSON.stringify(usersDB));
+        localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(activeUser));
+      }
+      updateLevelButtonsUI();
+      updateHeaderAndBannerUI();
+      if (!document.getElementById('mapStudioView').classList.contains('hidden')) {
+        renderMapStudioView();
+      }
+      showToast(`Difficulty switched to ${lvl}`);
+    }
+
+    function updateLevelButtonsUI() {
+      document.querySelectorAll('.global-lvl-btn').forEach(btn => {
+        const active = btn.dataset.lvl === globalLevel;
+        btn.classList.remove('bg-emerald-600', 'bg-amber-600', 'bg-rose-600', 'text-white', 'text-slate-400');
+        if (active) {
+          const bg = globalLevel === 'Beginner' ? 'bg-emerald-600' : globalLevel === 'Extreme' ? 'bg-rose-600' : 'bg-amber-600';
+          btn.classList.add(bg, 'text-white');
+        } else {
+          btn.classList.add('text-slate-400');
+        }
+      });
+    }
+
+    function calculateAge(dobStr) {
+      if (!dobStr) return null;
+      const dob = new Date(dobStr);
+      if (isNaN(dob.getTime())) return null;
+      const now = new Date();
+      let age = now.getFullYear() - dob.getFullYear();
+      const m = now.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+      return age >= 0 ? age : null;
+    }
+
+    function updateCalculatedAge() {
+      const age = calculateAge(document.getElementById('profDob').value);
+      document.getElementById('calculatedAgeDisplay').textContent = age !== null ? `Age: ${age} yrs` : 'Age: -- yrs';
+    }
+
+    function openAuthOrProfileModal() {
+      const selector = document.getElementById('profileCharacterSelector');
+      const currentTarget = (activeUser && activeUser.targetCharId) || selectedCharId;
+      selector.innerHTML = charactersData.map(c => `
+        <label class="cursor-pointer">
+          <input type="radio" name="profTargetChar" value="${c.id}" ${c.id === currentTarget ? 'checked' : ''} class="peer sr-only" />
+          <div class="p-2 rounded-xl bg-[#090B10] border border-slate-800 peer-checked:border-indigo-500 peer-checked:bg-indigo-500/15 flex flex-col items-center text-center transition">
+            <img src="${characterThumbnailCache[c.id]}" class="w-12 h-12 rounded-lg object-cover border border-slate-700 mb-1" />
+            <span class="text-[11px] font-bold text-white line-clamp-1">${c.name.split(' ')[0]}</span>
+            <span class="text-[9px] text-slate-400 line-clamp-1">${c.anime}</span>
+          </div>
+        </label>
+      `).join('');
+
+      if (activeUser) {
+        switchAuthTab('signup');
+        document.getElementById('authModalTitle').textContent = 'Fighter Profile & 3D Physique Goal';
+        document.getElementById('tabSignupBtn').textContent = 'Edit Profile';
+        document.getElementById('profName').value = activeUser.name || '';
+        document.getElementById('profEmail').value = activeUser.email || '';
+        document.getElementById('profPassword').value = activeUser.password || '';
+        document.getElementById('profDob').value = activeUser.dob || '';
+        updateCalculatedAge();
+        document.querySelectorAll('input[name="profLevel"]').forEach(r => r.checked = (r.value === (activeUser.level || globalLevel)));
+        document.getElementById('logoutBtn').classList.remove('hidden');
+      } else {
+        switchAuthTab('signup');
+        document.getElementById('authModalTitle').textContent = 'Sign In & Configure Your Profile';
+        document.getElementById('tabSignupBtn').textContent = 'Create Profile';
+        document.getElementById('logoutBtn').classList.add('hidden');
+      }
+      document.getElementById('authProfileModal').classList.remove('hidden');
+    }
+
+    function closeAuthProfileModal() {
+      document.getElementById('authProfileModal').classList.add('hidden');
+    }
+
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('loginOnlyForm');
+      const setupForm = document.getElementById('profileSetupForm');
+      const btnSignup = document.getElementById('tabSignupBtn');
+      const btnLogin = document.getElementById('tabLoginBtn');
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        setupForm.classList.add('hidden');
+        btnLogin.classList.add('bg-indigo-600', 'text-white');
+        btnSignup.classList.remove('bg-indigo-600', 'text-white');
+      } else {
+        setupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        btnSignup.classList.add('bg-indigo-600', 'text-white');
+        btnLogin.classList.remove('bg-indigo-600', 'text-white');
+      }
+    }
+
+    function handleSaveProfile(e) {
+      e.preventDefault();
+      const name = document.getElementById('profName').value.trim();
+      const email = document.getElementById('profEmail').value.trim().toLowerCase();
+      const password = document.getElementById('profPassword').value;
+      const dob = document.getElementById('profDob').value;
+      const age = calculateAge(dob);
+      const level = document.querySelector('input[name="profLevel"]:checked').value;
+      const targetCharId = document.querySelector('input[name="profTargetChar"]:checked').value;
+
+      activeUser = { name, email, password, dob, age, level, targetCharId };
+      usersDB[email] = activeUser;
+      globalLevel = level;
+      selectedCharId = targetCharId;
+
+      localStorage.setItem(USERS_KEY, JSON.stringify(usersDB));
+      localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(activeUser));
+      localStorage.setItem(LEVEL_KEY, globalLevel);
+
+      updateLevelButtonsUI();
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      closeAuthProfileModal();
+      showToast('Profile saved! Target 3D physique updated.');
+      speakAI(`Welcome ${name}. Your ${level} home workout calendar is ready.`);
+    }
+
+    function handleEmailLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+      const found = usersDB[email];
+      if (!found || found.password !== password) {
+        showToast('Account not found or wrong password. Create a profile first!');
+        return;
+      }
+      activeUser = found;
+      globalLevel = found.level || 'Intermediate';
+      selectedCharId = found.targetCharId || 'toji';
+      localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(activeUser));
+      localStorage.setItem(LEVEL_KEY, globalLevel);
+
+      updateLevelButtonsUI();
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      closeAuthProfileModal();
+      showToast(`Signed in as ${found.name}!`);
+    }
+
+    function handleLogout() {
+      activeUser = null;
+      localStorage.removeItem(ACTIVE_USER_KEY);
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      closeAuthProfileModal();
+      showToast('Signed out');
+    }
+
+    function isDayCompleted(charId, dateKey) {
+      return !!(completedDaysMap[`${charId}_${dateKey}`] || completedDaysMap[`${charId}_date_${dateKey}`]);
+    }
+
+    function getDayCompletedEntry(charId, dateKey) {
+      return completedDaysMap[`${charId}_${dateKey}`] || completedDaysMap[`${charId}_date_${dateKey}`] || null;
+    }
+
+    function getCharacterCompletedStats(charId) {
+      let count = 0;
+      let totalKcal = 0;
+      Object.keys(completedDaysMap).forEach(k => {
+        if (k.startsWith(charId + '_')) {
+          count++;
+          totalKcal += completedDaysMap[k].kcal || 130;
+        }
+      });
+      return { count, totalKcal };
+    }
+
+    function updateHeaderAndBannerUI() {
+      const targetId = (activeUser && activeUser.targetCharId) || selectedCharId || 'toji';
+      const targetChar = charactersData.find(c => c.id === targetId) || charactersData[0];
+
+      if (hero3DView) hero3DView.setCharacter(targetChar.id);
+
+      document.getElementById('navUserAvatarImg').src = characterThumbnailCache[targetChar.id] || '';
+      if (activeUser) {
+        document.getElementById('navUserName').textContent = activeUser.name;
+        document.getElementById('navUserSub').textContent = `${activeUser.age ? activeUser.age + ' yrs • ' : ''}${globalLevel}`;
+      } else {
+        document.getElementById('navUserName').textContent = 'Sign In / Join';
+        document.getElementById('navUserSub').textContent = 'Set Age & Goal';
+      }
+
+      document.getElementById('bannerLevelBadge').textContent = `${globalLevel} Plan`;
+      const ageBadge = document.getElementById('bannerAgeBadge');
+      if (activeUser && activeUser.age !== null) {
+        ageBadge.textContent = `Age: ${activeUser.age}`;
+        ageBadge.classList.remove('hidden');
+      } else {
+        ageBadge.classList.add('hidden');
+      }
+
+      const stats = getCharacterCompletedStats(targetChar.id);
+      document.getElementById('statDaysDone').textContent = `${stats.count} Sessions`;
+      document.getElementById('statKcalTotal').textContent = `${stats.totalKcal} kcal`;
+      document.getElementById('statTargetName').textContent = targetChar.name.split(' ')[0];
+
+      if (activeUser) {
+        document.getElementById('bannerHeadline').textContent = `${activeUser.name} • Target: ${targetChar.name}`;
+        document.getElementById('bannerStartBtnText').textContent = `Open ${targetChar.name.split(' ')[0]}'s Year Calendar`;
+      } else {
+        document.getElementById('bannerHeadline').textContent = 'Sculpt Your 3D Anime Physique At Home';
+        document.getElementById('bannerStartBtnText').textContent = `Open ${targetChar.name.split(' ')[0]}'s Workout Calendar`;
+      }
+    }
+
+    function launchTargetCharacterMap() {
+      const targetId = (activeUser && activeUser.targetCharId) || selectedCharId || 'toji';
+      openCharacterMapStudio(targetId);
+    }
+
+    // =========================================================================
+    // 5. RENDER 10 MATURE REALISTIC 3D ANIME CHARACTER CARDS
+    // =========================================================================
+    function renderCharacterGrid() {
+      const grid = document.getElementById('characterGrid');
+      const filtered = charactersData.filter(char => {
+        const matchesGoal = activeGoalFilter === 'All' || char.goalCategory === activeGoalFilter;
+        const matchesSearch =
+          char.name.toLowerCase().includes(searchQuery) ||
+          char.anime.toLowerCase().includes(searchQuery) ||
+          char.physiqueTitle.toLowerCase().includes(searchQuery);
+        return matchesGoal && matchesSearch;
+      });
+
+      grid.innerHTML = filtered.map(char => {
+        const isGoal = activeUser && activeUser.targetCharId === char.id;
+        const stats = getCharacterCompletedStats(char.id);
+        return `
+          <article onclick="openCharacterMapStudio('${char.id}')" class="cursor-pointer rounded-3xl bg-surface border ${isGoal ? 'border-indigo-500 ring-1 ring-indigo-500/40' : 'border-slate-800 hover:border-slate-600'} shadow-xl overflow-hidden flex flex-col justify-between transition-all hover:-translate-y-1 group">
+            <div class="relative h-56 bg-[#090B10] overflow-hidden border-b border-slate-800/80">
+              <img src="${characterThumbnailCache[char.id]}" alt="${char.name} 3D Profile" class="w-full h-full object-cover object-top scale-105 group-hover:scale-110 transition-transform duration-500" />
+              <div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/35 to-transparent"></div>
+
+              <div class="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                <span class="px-2.5 py-1 rounded-lg bg-[#090B10]/85 backdrop-blur-md border border-slate-700/80 text-[11px] font-bold text-slate-200">${char.anime}</span>
+                ${isGoal ? `<span class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[10px] font-bold uppercase shadow">Your Target</span>` : `<span class="px-2.5 py-1 rounded-lg bg-slate-900/90 border border-slate-700 text-slate-300 text-[10px] font-bold uppercase">Year Calendar</span>`}
+              </div>
+
+              <div class="absolute bottom-3 left-4 right-4 flex items-end justify-between">
+                <div>
+                  <h3 class="font-display font-bold text-2xl text-white leading-none group-hover:text-indigo-300 transition-colors">${char.name}</h3>
+                  <p class="text-xs font-bold uppercase tracking-wider mt-1" style="color: ${char.accent}">${char.physiqueTitle}</p>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-[#090B10]/90 border border-slate-700 text-[10px] font-bold text-slate-300">${stats.count} Logged</span>
+              </div>
+            </div>
+
+            <div class="p-4 flex-1 flex flex-col justify-between">
+              <div>
+                <p class="text-xs text-slate-300 leading-relaxed line-clamp-2">${char.description}</p>
+                <div class="mt-3 flex flex-wrap gap-1.5">
+                  ${char.muscles.map(m => `<span class="px-2 py-0.5 rounded-md bg-[#090B10] border border-slate-800 text-[10px] font-semibold text-slate-300">${m}</span>`).join('')}
+                </div>
+              </div>
+
+              <button type="button" class="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#090B10] group-hover:bg-indigo-600 border border-slate-700/80 group-hover:border-indigo-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all">
+                <span>Open Full Training Calendar</span>
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 6. HOME WORKOUT 28-DAY WINDING MAP & DAY OVERVIEW STUDIO
+    // =========================================================================
+    function showRosterView() {
+      document.getElementById('mapStudioView').classList.add('hidden');
+      document.getElementById('rosterView').classList.remove('hidden');
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openCharacterMapStudio(charId) {
+      selectedCharId = charId;
+      // Default to first uncompleted day
+      let nextDay = 1;
+      for (let d = 1; d <= 28; d++) {
+        if (!completedDaysMap[`${charId}_day${d}`]) {
+          nextDay = d;
+          break;
+        }
+      }
+      selectedDayNum = nextDay;
+      selectedPreviewExIdx = 0;
+
+      document.getElementById('rosterView').classList.add('hidden');
+      document.getElementById('mapStudioView').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (backdrop3DView) backdrop3DView.setCharacter(charId);
+      if (preview3DView) preview3DView.setCharacter(charId);
+
+      renderMapStudioView();
+
+      const char = charactersData.find(c => c.id === charId);
+      speakAI(`${char.name} 28-day home workout map loaded. Ready for Day ${selectedDayNum}.`);
+    }
+
+    function renderMapStudioView() {
+      const char = charactersData.find(c => c.id === selectedCharId) || charactersData[0];
+      const plan28 = get28DayPlanForCharacter(char);
+      const currentDayObj = plan28[selectedDayNum - 1] || plan28[0];
+      const activeEx = currentDayObj.exercises[selectedPreviewExIdx] || currentDayObj.exercises[0];
+
+      // Header Info
+      const avatarImg = document.getElementById('studioCharAvatarImg');
+      avatarImg.src = characterThumbnailCache[char.id];
+      avatarImg.style.borderColor = char.accent;
+
+      document.getElementById('studioCharAnime').textContent = char.anime;
+      const physBadge = document.getElementById('studioCharPhysique');
+      physBadge.textContent = char.physiqueTitle;
+      physBadge.className = `px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${char.badgeClass}`;
+
+      document.getElementById('studioCharName').textContent = char.name;
+      document.getElementById('studioHomeGear').textContent = `Home Gear: ${char.homeGearTip}`;
+
+      const stats = getCharacterCompletedStats(char.id);
+      const pct = Math.round((stats.count / 28) * 100);
+      document.getElementById('studioProgressPercent').textContent = `${pct}% (${stats.count}/28)`;
+      document.getElementById('studioProgressBar').style.width = `${pct}%`;
+      document.getElementById('startDayCtaLabel').textContent = `START DAY ${selectedDayNum} WORKOUT`;
+
+      // Render 4-Week / 28-Day Winding S-Curve Map (Left Column)
+      const mapContainer = document.getElementById('windingMapContainer');
+      let mapHTML = '';
+      for (let w = 1; w <= 4; w++) {
+        const weekDays = plan28.filter(item => item.week === w);
+        const weekDoneCount = weekDays.filter(d => completedDaysMap[`${char.id}_day${d.day}`]).length;
+
+        mapHTML += `
+          <div class="p-4 rounded-2xl bg-[#090B10] border border-slate-800/90">
+            <div class="flex items-center justify-between mb-3">
+              <span class="font-display font-bold text-base uppercase tracking-wider text-white">Week ${w}</span>
+              <span class="text-xs font-bold ${weekDoneCount === 7 ? 'text-emerald-400' : 'text-slate-400'}">${weekDoneCount} / 7 Days</span>
+            </div>
+
+            <!-- Winding S-Curve Connected Nodes -->
+            <div class="flex flex-col items-center space-y-2.5 py-1">
+              ${weekDays.map((dItem, idx) => {
+                const isDone = !!completedDaysMap[`${char.id}_day${dItem.day}`];
+                const isSelected = dItem.day === selectedDayNum;
+                // Winding horizontal offset pattern
+                const offsets = ['translate-x-0', 'translate-x-10', 'translate-x-14', 'translate-x-4', '-translate-x-8', '-translate-x-14', 'translate-x-0'];
+                const offsetCls = offsets[idx % 7];
+
+                return `
+                  <div class="flex items-center justify-center w-full">
+                    <button onclick="selectMapDay(${dItem.day})" class="${offsetCls} ${isSelected ? 'active-day-node ring-2 ring-indigo-400' : ''} group flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all ${
+                      isDone
+                        ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300'
+                        : isSelected
+                          ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg'
+                          : 'bg-surface border-slate-800 text-slate-300 hover:border-slate-600'
+                    }">
+                      <div class="w-8 h-8 rounded-full flex items-center justify-center font-display font-bold text-sm ${
+                        isDone ? 'bg-emerald-500 text-slate-950' : isSelected ? 'bg-white text-indigo-700' : 'bg-[#090B10] text-slate-300'
+                      }">
+                        ${isDone ? '✓' : dItem.isMilestone ? '🏆' : dItem.day}
+                      </div>
+                      <div class="text-left">
+                        <div class="text-xs font-bold leading-tight">Day ${dItem.day} ${dItem.isMilestone ? '• Boss Test' : ''}</div>
+                        <div class="text-[10px] opacity-80 truncate max-w-[130px]">${dItem.focusTitle}</div>
+                      </div>
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+      mapContainer.innerHTML = mapHTML;
+
+      // Render Right Column: Day Overview + 3D Biomechanics + Muscle Target Map
+      document.getElementById('dayOverviewBadge').textContent = `DAY ${currentDayObj.day}`;
+      document.getElementById('dayOverviewLevel').textContent = globalLevel;
+      document.getElementById('dayOverviewTitle').textContent = currentDayObj.focusTitle;
+      document.getElementById('dayOverviewMins').textContent = `${currentDayObj.estMinutes} mins`;
+      document.getElementById('dayOverviewKcal').textContent = `${currentDayObj.estKcal} kcal`;
+      document.getElementById('dayOverviewCount').textContent = `${currentDayObj.exercises.length}`;
+
+      // Update 3D Exercise Preview & Muscle Target Diagram
+      document.getElementById('preview3DExTitle').textContent = activeEx.name;
+      if (preview3DView) {
+        preview3DView.setCharacter(char.id);
+        preview3DView.animType = activeEx.animType;
+      }
+
+      renderAnatomicalBodyMap('overviewBodyFront', 'overviewBodyBack', activeEx.primary, activeEx.secondary);
+      document.getElementById('overviewMusclePills').innerHTML = [
+        ...activeEx.primary.map(m => `<span class="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold capitalize">${m}</span>`),
+        ...activeEx.secondary.map(m => `<span class="px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-semibold capitalize">${m}</span>`)
+      ].join('');
+
+      // Render Exercise Sequence List
+      document.getElementById('dayExerciseSequenceList').innerHTML = currentDayObj.exercises.map((ex, idx) => {
+        const scaled = getScaledExercisePrescription(ex);
+        const isViewing = idx === selectedPreviewExIdx;
+        return `
+          <div onclick="selectPreviewExercise(${idx})" class="cursor-pointer p-3.5 rounded-2xl border flex items-center justify-between gap-3 transition ${
+            isViewing ? 'bg-surfaceLight border-indigo-500 shadow-md' : 'bg-[#090B10] border-slate-800 hover:border-slate-700'
+          }">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-xl bg-surface border border-slate-700 flex items-center justify-center font-display font-bold text-sm text-indigo-400 shrink-0">
+                0${idx + 1}
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm text-white truncate">${ex.name}</h4>
+                <p class="text-[11px] text-rose-400 truncate">Target: ${ex.targetText}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="px-2.5 py-1 rounded-lg bg-surface border border-slate-700 text-xs font-bold text-emerald-300">${scaled.fullPrescription}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectMapDay(dayNum) {
+      selectedDayNum = dayNum;
+      selectedPreviewExIdx = 0;
+      renderMapStudioView();
+    }
+
+    function selectPreviewExercise(idx) {
+      selectedPreviewExIdx = idx;
+      renderMapStudioView();
+      speakSelectedExerciseCue();
+    }
+
+    function speakSelectedExerciseCue() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const plan28 = get28DayPlanForCharacter(char);
+      const dayObj = plan28[selectedDayNum - 1];
+      const ex = dayObj.exercises[selectedPreviewExIdx];
+      const scaled = getScaledExercisePrescription(ex);
+      speakAI(`${ex.name}. ${scaled.sets} sets of ${scaled.repsLabel}. Target muscles: ${ex.targetText}. ${ex.tip}`);
+    }
+
+    // =========================================================================
+    // 7. FULL-SCREEN GUIDED HOME WORKOUT PLAYER (READY -> ACTIVE 3D -> REST -> TROPHY)
+    // =========================================================================
+    function startGuidedWorkoutPlayer() {
+      playerExIdx = 0;
+      document.getElementById('guidedPlayerModal').classList.remove('hidden');
+      if (player3DView) player3DView.setCharacter(selectedCharId);
+      enterPlayerReadyStage();
+    }
+
+    function closeGuidedPlayer() {
+      clearInterval(readyTimer);
+      clearInterval(restTimer);
+      stopVoiceCoach();
+      document.getElementById('guidedPlayerModal').classList.add('hidden');
+    }
+
+    function setPlayerStage(stageName) {
+      ['playerStageReady', 'playerStageActive', 'playerStageRest', 'playerStageComplete'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(stageName).classList.remove('hidden');
+    }
+
+    function updatePlayerProgressBars(totalCount) {
+      const container = document.getElementById('playerProgressBars');
+      let html = '';
+      for (let i = 0; i < totalCount; i++) {
+        const cls = i < playerExIdx ? 'bg-emerald-400' : i === playerExIdx ? 'bg-indigo-500' : 'bg-slate-800';
+        html += `<div class="h-1.5 flex-1 rounded-full ${cls}"></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function enterPlayerReadyStage() {
+      clearInterval(readyTimer);
+      clearInterval(restTimer);
+
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = get28DayPlanForCharacter(char)[selectedDayNum - 1];
+      const ex = dayObj.exercises[playerExIdx];
+
+      updatePlayerProgressBars(dayObj.exercises.length);
+      setPlayerStage('playerStageReady');
+
+      document.getElementById('readyNextExName').textContent = ex.name;
+      document.getElementById('readyNextExTarget').textContent = `Target: ${ex.targetText}`;
+      readySec = 5;
+      document.getElementById('readyCountdownNum').textContent = readySec;
+
+      speakAI(`Get ready for ${ex.name}. Starting in 5 seconds.`);
+
+      readyTimer = setInterval(() => {
+        readySec--;
+        document.getElementById('readyCountdownNum').textContent = readySec;
+        if (readySec <= 3 && readySec > 0) speakAI(`${readySec}`);
+        if (readySec <= 0) {
+          clearInterval(readyTimer);
+          enterPlayerActiveStage();
+        }
+      }, 1000);
+    }
+
+    function skipReadyCountdown() {
+      clearInterval(readyTimer);
+      enterPlayerActiveStage();
+    }
+
+    function enterPlayerActiveStage() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = get28DayPlanForCharacter(char)[selectedDayNum - 1];
+      const ex = dayObj.exercises[playerExIdx];
+      const scaled = getScaledExercisePrescription(ex);
+
+      updatePlayerProgressBars(dayObj.exercises.length);
+      setPlayerStage('playerStageActive');
+
+      if (player3DView) {
+        player3DView.setCharacter(char.id);
+        player3DView.animType = ex.animType;
+      }
+
+      document.getElementById('playerStepLabel').textContent = `Exercise ${playerExIdx + 1} of ${dayObj.exercises.length}`;
+      document.getElementById('playerExTitle').textContent = ex.name;
+      document.getElementById('playerExTargetLine').textContent = `Target: ${ex.targetText}`;
+      document.getElementById('playerFormCueText').textContent = ex.tip;
+      document.getElementById('playerPrescriptionMain').textContent = scaled.fullPrescription;
+      document.getElementById('playerPrescriptionSub').textContent = `${globalLevel} Intensity • Tap DONE when finished`;
+
+      renderAnatomicalBodyMap('playerBodyFront', 'playerBodyBack', ex.primary, ex.secondary);
+      document.getElementById('playerMuscleTags').innerHTML = ex.primary.map(m =>
+        `<span class="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold capitalize">${m}</span>`
+      ).join('');
+
+      speakAI(`Begin ${ex.name}! ${scaled.fullPrescription}. Focus on ${ex.targetText}.`);
+    }
+
+    function prevPlayerExercise() {
+      if (playerExIdx > 0) {
+        playerExIdx--;
+        enterPlayerActiveStage();
+      }
+    }
+
+    function completeCurrentPlayerExercise() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = get28DayPlanForCharacter(char)[selectedDayNum - 1];
+
+      if (playerExIdx + 1 >= dayObj.exercises.length) {
+        enterPlayerCompleteStage();
+      } else {
+        enterPlayerRestStage();
+      }
+    }
+
+    function enterPlayerRestStage() {
+      clearInterval(restTimer);
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = get28DayPlanForCharacter(char)[selectedDayNum - 1];
+      const currentEx = dayObj.exercises[playerExIdx];
+      const nextEx = dayObj.exercises[playerExIdx + 1];
+      const scaled = getScaledExercisePrescription(currentEx);
+
+      setPlayerStage('playerStageRest');
+      restSec = scaled.restSec;
+      document.getElementById('restCountdownDisplay').textContent = `00:${restSec.toString().padStart(2, '0')}`;
+      document.getElementById('restNextUpName').textContent = nextEx.name;
+      document.getElementById('restNextUpTarget').textContent = `Target: ${nextEx.targetText}`;
+
+      speakAI(`Take a rest for ${restSec} seconds. Next up: ${nextEx.name}.`);
+
+      restTimer = setInterval(() => {
+        restSec--;
+        const m = Math.floor(restSec / 60).toString().padStart(2, '0');
+        const s = (restSec % 60).toString().padStart(2, '0');
+        document.getElementById('restCountdownDisplay').textContent = `${m}:${s}`;
+
+        if (restSec === 10) speakAI('10 seconds left. Get ready!');
+        if (restSec <= 0) {
+          clearInterval(restTimer);
+          playerExIdx++;
+          enterPlayerActiveStage();
+        }
+      }, 1000);
+    }
+
+    function addRestSeconds(extra) {
+      restSec += extra;
+      const m = Math.floor(restSec / 60).toString().padStart(2, '0');
+      const s = (restSec % 60).toString().padStart(2, '0');
+      document.getElementById('restCountdownDisplay').textContent = `${m}:${s}`;
+    }
+
+    function skipRestStage() {
+      clearInterval(restTimer);
+      playerExIdx++;
+      enterPlayerActiveStage();
+    }
+
+    function enterPlayerCompleteStage() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = get28DayPlanForCharacter(char)[selectedDayNum - 1];
+
+      // Save Day completion!
+      completedDaysMap[`${char.id}_day${selectedDayNum}`] = {
+        kcal: dayObj.estKcal,
+        mins: dayObj.estMinutes,
+        completedAt: Date.now()
+      };
+      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDaysMap));
+
+      setPlayerStage('playerStageComplete');
+      document.getElementById('completeHeadline').textContent = `DAY ${selectedDayNum} COMPLETED!`;
+      document.getElementById('completeExCount').textContent = dayObj.exercises.length;
+      document.getElementById('completeKcal').textContent = dayObj.estKcal;
+      document.getElementById('completeDuration').textContent = `${dayObj.estMinutes}m`;
+
+      speakAI(`Congratulations! Day ${selectedDayNum} of ${char.name} training is complete! You burned ${dayObj.estKcal} calories.`);
+    }
+
+    function finishAndReturnToMap() {
+      closeGuidedPlayer();
+      if (selectedDayNum < 28) selectedDayNum++;
+      renderMapStudioView();
+      updateHeaderAndBannerUI();
+    }
+
+    // =========================================================================
+    // 8. AI VOICE COACH (WEB SPEECH SYNTHESIS)
+    // =========================================================================
+    function setEqActive(active) {
+      const eq = document.getElementById('headerEq');
+      if (!eq) return;
+      if (active) eq.classList.remove('eq-paused');
+      else eq.classList.add('eq-paused');
+    }
+
+    function speakAI(text) {
+      if (isVoiceMuted || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.05;
+        utter.pitch = 0.98;
+        utter.onstart = () => setEqActive(true);
+        utter.onend = () => setEqActive(false);
+        utter.onerror = () => setEqActive(false);
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        setEqActive(false);
+      }
+    }
+
+    function stopVoiceCoach() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      setEqActive(false);
+    }
+
+    function toggleVoiceMute() {
+      isVoiceMuted = !isVoiceMuted;
+      document.getElementById('headerVoiceLabel').textContent = isVoiceMuted ? 'AI Coach Off' : 'AI Coach On';
+      document.getElementById('playerVoiceStatus').textContent = isVoiceMuted ? 'AI Coach: OFF' : 'AI Coach: ON';
+      if (isVoiceMuted) {
+        stopVoiceCoach();
+        showToast('AI Voice Coach muted');
+      } else {
+        speakAI('AI Voice Coach enabled. Let us train!');
+      }
+    }
+
+    // =========================================================================
+    // 9. TOAST & INITIALIZATION
+    // =========================================================================
+    // 6. FULL YEAR/MONTH/WEEK/DAY CALENDAR & SCREENSHOT-INSPIRED EXERCISE CARDS
+    // =========================================================================
+    const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    function initCalendarSelectors() {
+      const mSel = document.getElementById('calendarMonthSelect');
+      if (mSel && mSel.options.length === 0) {
+        mSel.innerHTML = MONTH_NAMES.map((mName, idx) => `<option value="${idx}">${mName}</option>`).join('');
+      }
+      if (mSel) mSel.value = String(calendarMonth);
+      const ySel = document.getElementById('calendarYearSelect');
+      if (ySel) ySel.value = String(calendarYear);
+    }
+
+    function setCalendarViewMode(mode) {
+      calendarViewMode = mode;
+      ['month', 'week', 'year'].forEach(m => {
+        const btn = document.getElementById(`calMode${m.charAt(0).toUpperCase() + m.slice(1)}Btn`);
+        if (!btn) return;
+        if (m === mode) {
+          btn.classList.add('bg-indigo-600', 'text-white');
+          btn.classList.remove('text-slate-400');
+        } else {
+          btn.classList.remove('bg-indigo-600', 'text-white');
+          btn.classList.add('text-slate-400');
+        }
+      });
+      renderMapStudioView();
+    }
+
+    function stepCalendarPeriod(delta) {
+      if (calendarViewMode === 'year') {
+        calendarYear += delta;
+        selectedDate = new Date(calendarYear, calendarMonth, Math.min(selectedDate.getDate(), 28));
+      } else if (calendarViewMode === 'week') {
+        selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + delta * 7);
+        calendarYear = selectedDate.getFullYear();
+        calendarMonth = selectedDate.getMonth();
+      } else {
+        const d = new Date(calendarYear, calendarMonth + delta, 1);
+        calendarYear = d.getFullYear();
+        calendarMonth = d.getMonth();
+        selectedDate = new Date(calendarYear, calendarMonth, Math.min(selectedDate.getDate(), new Date(calendarYear, calendarMonth + 1, 0).getDate()));
+      }
+      initCalendarSelectors();
+      renderMapStudioView();
+    }
+
+    function onCalendarMonthOrYearChange() {
+      calendarMonth = parseInt(document.getElementById('calendarMonthSelect').value, 10) || 0;
+      calendarYear = parseInt(document.getElementById('calendarYearSelect').value, 10) || 2026;
+      const maxDay = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+      selectedDate = new Date(calendarYear, calendarMonth, Math.min(selectedDate.getDate(), maxDay));
+      renderMapStudioView();
+    }
+
+    function jumpToTodayInCalendar() {
+      const t = new Date();
+      calendarYear = t.getFullYear();
+      calendarMonth = t.getMonth();
+      selectedDate = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+      initCalendarSelectors();
+      renderMapStudioView();
+    }
+
+    function getPeriodizationInfoForMonth(mIdx) {
+      if (mIdx < 3) return { title: 'Q1 • Base Foundation & Form Mastery', desc: 'Build strict home bodyweight mechanics, joint stability, and consistency.' };
+      if (mIdx < 6) return { title: 'Q2 • Hypertrophy & Calisthenic Volume', desc: 'Progressive rep/set overload and tempo tension for physique density.' };
+      if (mIdx < 9) return { title: 'Q3 • Peak Conditioning & Explosive Power', desc: 'High-output metabolic finishers, unilateral strength, and speed.' };
+      return { title: 'Q4 • Athletic Refinement & Year-End Peak', desc: 'Consolidate strength gains, mobility, and sustainable home habits.' };
+    }
+
+    function renderFullCalendarWidget(char) {
+      const container = document.getElementById('windingMapContainer');
+      const phase = getPeriodizationInfoForMonth(calendarMonth);
+      document.getElementById('periodPhaseTitle').textContent = phase.title;
+      document.getElementById('periodPhaseDesc').textContent = phase.desc;
+
+      const selectedKey = formatDateKey(selectedDate);
+      const todayKey = formatDateKey(new Date());
+
+      if (calendarViewMode === 'year') {
+        container.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">` + MONTH_NAMES.map((mName, mIdx) => {
+          const daysInM = new Date(calendarYear, mIdx + 1, 0).getDate();
+          let doneInM = 0;
+          for (let d = 1; d <= daysInM; d++) {
+            const k = formatDateKey(new Date(calendarYear, mIdx, d));
+            if (isDayCompleted(char.id, k)) doneInM++;
+          }
+          const isCurMonth = mIdx === calendarMonth;
+          return `
+            <button type="button" onclick="calendarMonth=${mIdx}; setCalendarViewMode('month');" class="p-3 rounded-2xl border text-left transition ${
+              isCurMonth ? 'bg-indigo-600/20 border-indigo-500 text-white' : 'bg-[#090B10] border-slate-800 text-slate-300 hover:border-slate-600'
+            }">
+              <div class="font-display font-bold text-base">${mName.slice(0, 3)} ${calendarYear}</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">${daysInM} Days • <span class="text-emerald-400 font-bold">${doneInM} Done</span></div>
+            </button>
+          `;
+        }).join('') + `</div>`;
+        return;
+      }
+
+      if (calendarViewMode === 'week') {
+        const startOfWeek = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() - selectedDate.getDay());
+        let html = `<div class="space-y-2">`;
+        for (let i = 0; i < 7; i++) {
+          const dObj = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + i);
+          const key = formatDateKey(dObj);
+          const session = getWorkoutSessionForDate(char, dObj);
+          const done = isDayCompleted(char.id, key);
+          const active = key === selectedKey;
+          html += `
+            <button type="button" onclick="selectCalendarDate('${key}')" class="w-full p-3 rounded-2xl border flex items-center justify-between gap-2 transition ${
+              active ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : done ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200' : 'bg-[#090B10] border-slate-800 text-slate-300 hover:border-slate-700'
+            }">
+              <div class="text-left">
+                <div class="text-xs font-bold">${dObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} ${key === todayKey ? '• Today' : ''}</div>
+                <div class="text-[11px] opacity-80">${session.focusTitle} (${session.estMinutes}m • ${session.estKcal} kcal)</div>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase ${done ? 'bg-emerald-500 text-slate-950' : 'bg-surface border border-slate-700 text-slate-300'}">${done ? 'Done' : 'Train'}</span>
+            </button>
+          `;
+        }
+        html += `</div>`;
+        container.innerHTML = html;
+        return;
+      }
+
+      // Default: Full Month Calendar Grid (Sun - Sat)
+      const firstDayWeekday = new Date(calendarYear, calendarMonth, 1).getDay();
+      const totalDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+      const weekHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      let cells = weekHeaders.map(h => `<div class="text-center text-[10px] font-bold uppercase text-slate-500 py-1">${h}</div>`).join('');
+      for (let b = 0; b < firstDayWeekday; b++) {
+        cells += `<div class="h-11 rounded-xl bg-[#090B10]/40"></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const dObj = new Date(calendarYear, calendarMonth, day);
+        const key = formatDateKey(dObj);
+        const done = isDayCompleted(char.id, key);
+        const isSelected = key === selectedKey;
+        const isToday = key === todayKey;
+
+        cells += `
+          <button type="button" onclick="selectCalendarDate('${key}')" class="h-11 rounded-xl border flex flex-col items-center justify-center relative transition ${
+            isSelected
+              ? 'active-day-node bg-indigo-600 border-indigo-400 text-white font-bold shadow-md'
+              : done
+                ? 'bg-emerald-500/15 border-emerald-500/45 text-emerald-300 font-semibold'
+                : 'bg-[#090B10] border-slate-800/90 text-slate-300 hover:border-slate-600'
+          }">
+            <span class="text-xs leading-none">${day}</span>
+            <span class="text-[8px] mt-0.5 leading-none ${isSelected ? 'text-indigo-100' : done ? 'text-emerald-400' : isToday ? 'text-amber-400' : 'text-slate-500'}">
+              ${done ? '✓' : isToday ? 'NOW' : '•'}
+            </span>
+          </button>
+        `;
+      }
+
+      container.innerHTML = `<div class="grid grid-cols-7 gap-1.5">${cells}</div>`;
+    }
+
+    function selectCalendarDate(dateKey) {
+      const parts = dateKey.split('-').map(Number);
+      selectedDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      calendarYear = selectedDate.getFullYear();
+      calendarMonth = selectedDate.getMonth();
+      selectedPreviewExIdx = 0;
+      initCalendarSelectors();
+      renderMapStudioView();
+    }
+
+    function showRosterView() {
+      document.getElementById('mapStudioView').classList.add('hidden');
+      document.getElementById('rosterView').classList.remove('hidden');
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openCharacterMapStudio(charId) {
+      selectedCharId = charId;
+      calendarYear = selectedDate.getFullYear();
+      calendarMonth = selectedDate.getMonth();
+      selectedPreviewExIdx = 0;
+      activeCardTabs = {};
+
+      document.getElementById('rosterView').classList.add('hidden');
+      document.getElementById('mapStudioView').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      initCalendarSelectors();
+      if (backdrop3DView) backdrop3DView.setCharacter(charId);
+      if (preview3DView) preview3DView.setCharacter(charId);
+
+      renderMapStudioView();
+
+      const char = charactersData.find(c => c.id === charId);
+      speakAI(`${char.name} home workout calendar loaded for ${formatDisplayDate(selectedDate)}.`);
+    }
+
+    function setExerciseCardTab(exIdx, tabName) {
+      activeCardTabs[exIdx] = tabName;
+      selectedPreviewExIdx = exIdx;
+      renderMapStudioView();
+    }
+
+    function toggleDateWorkoutCompletion() {
+      const char = charactersData.find(c => c.id === selectedCharId) || charactersData[0];
+      const session = getWorkoutSessionForDate(char, selectedDate);
+      const key = `${char.id}_${session.dateKey}`;
+      if (completedDaysMap[key]) {
+        delete completedDaysMap[key];
+        showToast(`Unmarked ${formatDisplayDate(selectedDate)}`);
+      } else {
+        completedDaysMap[key] = { kcal: session.estKcal, mins: session.estMinutes, completedAt: Date.now() };
+        showToast(`${formatDisplayDate(selectedDate)} marked completed!`);
+      }
+      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDaysMap));
+      renderMapStudioView();
+      updateHeaderAndBannerUI();
+    }
+
+    function renderMapStudioView() {
+      const char = charactersData.find(c => c.id === selectedCharId) || charactersData[0];
+      const currentDayObj = getWorkoutSessionForDate(char, selectedDate);
+      const activeEx = currentDayObj.exercises[selectedPreviewExIdx] || currentDayObj.exercises[0];
+      const dayDone = isDayCompleted(char.id, currentDayObj.dateKey);
+
+      const avatarImg = document.getElementById('studioCharAvatarImg');
+      avatarImg.src = characterThumbnailCache[char.id];
+      avatarImg.style.borderColor = char.accent;
+
+      document.getElementById('studioCharAnime').textContent = char.anime;
+      const physBadge = document.getElementById('studioCharPhysique');
+      physBadge.textContent = char.physiqueTitle;
+      physBadge.className = `px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider border ${char.badgeClass}`;
+
+      document.getElementById('studioCharName').textContent = char.name;
+      document.getElementById('studioHomeGear').textContent = `Home Gear: ${char.homeGearTip}`;
+
+      const stats = getCharacterCompletedStats(char.id);
+      const yearGoalDays = 365;
+      const pct = Math.min(100, Math.round((stats.count / yearGoalDays) * 100));
+      document.getElementById('studioProgressPercent').textContent = `${stats.count} Sessions (${pct}%)`;
+      document.getElementById('studioProgressBar').style.width = `${Math.max(dayDone ? 6 : 0, pct)}%`;
+      document.getElementById('startDayCtaLabel').textContent = dayDone ? `REPLAY ${formatDisplayDate(selectedDate)}` : `START ${formatDisplayDate(selectedDate)}`;
+
+      renderFullCalendarWidget(char);
+
+      document.getElementById('dayOverviewBadge').textContent = formatDisplayDate(selectedDate);
+      document.getElementById('dayOverviewWeekTag').textContent = `Week ${currentDayObj.weekOfYear} • Day ${currentDayObj.dayOfYear}`;
+      document.getElementById('dayOverviewLevel').textContent = globalLevel;
+      document.getElementById('dayOverviewTitle').textContent = currentDayObj.focusTitle;
+      document.getElementById('dayOverviewMins').textContent = `${currentDayObj.estMinutes} mins`;
+      document.getElementById('dayOverviewKcal').textContent = `${currentDayObj.estKcal} kcal`;
+      document.getElementById('dayOverviewCount').textContent = `${currentDayObj.exercises.length}`;
+
+      if (preview3DView) {
+        preview3DView.setCharacter(char.id);
+        preview3DView.animType = activeEx.animType;
+      }
+
+      // Render Screenshot 1 Inspired Numbered Exercise Cards with 'How to perform' & 'Target muscles' Tabs
+      document.getElementById('dayExerciseSequenceList').innerHTML = currentDayObj.exercises.map((ex, idx) => {
+        const scaled = getScaledExercisePrescription(ex);
+        const currentTab = activeCardTabs[idx] || 'how';
+        const isSelected3D = idx === selectedPreviewExIdx;
+
+        return `
+          <div class="rounded-2xl bg-[#090B10] border ${isSelected3D ? 'border-indigo-500/80' : 'border-slate-800'} p-4 space-y-3 transition">
+            <!-- Numbered Header Row + Completion Radio/Check Circle on Top Right -->
+            <div class="flex items-start justify-between gap-3">
+              <div onclick="selectPreviewExercise(${idx})" class="cursor-pointer min-w-0 flex-1">
+                <h4 class="font-bold text-base text-white leading-snug">${idx + 1}. ${ex.name}</h4>
+                <p class="text-xs text-slate-400 mt-0.5">${scaled.sets} × ${scaled.repsLabel.toLowerCase()} · <span class="text-slate-300 font-medium">Target: ${ex.targetText}</span></p>
+              </div>
+
+              <button type="button" onclick="toggleDateWorkoutCompletion()" title="${dayDone ? 'Session Completed' : 'Mark Session Completed'}" class="w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition ${
+                dayDone ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-400 text-transparent'
+              }">
+                <svg class="w-4 h-4 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Pill Tabs: 'How to perform' | 'Target muscles' -->
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="setExerciseCardTab(${idx}, 'how')" class="py-2 px-3 rounded-full text-xs font-bold transition ${
+                currentTab === 'how' ? 'bg-slate-200 text-slate-950 shadow' : 'bg-surface border border-slate-800 text-slate-300 hover:text-white'
+              }">How to perform</button>
+              <button type="button" onclick="setExerciseCardTab(${idx}, 'muscles')" class="py-2 px-3 rounded-full text-xs font-bold transition ${
+                currentTab === 'muscles' ? 'bg-slate-200 text-slate-950 shadow' : 'bg-surface border border-slate-800 text-slate-300 hover:text-white'
+              }">Target muscles</button>
+            </div>
+
+            ${currentTab === 'how' ? `
+              <div class="rounded-2xl bg-surface/90 border border-slate-800/90 p-3 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-400">3D Movement Biomechanics (${scaled.fullPrescription})</span>
+                  <div class="flex items-center gap-1">
+                    <button type="button" onclick="selectPreviewExercise(${idx}); setPreviewCameraPreset('side');" class="px-2 py-0.5 rounded bg-[#090B10] border border-slate-700 text-[10px] font-bold text-slate-300 hover:text-white">Side</button>
+                    <button type="button" onclick="selectPreviewExercise(${idx}); setPreviewCameraPreset('threeQuarter');" class="px-2 py-0.5 rounded bg-[#090B10] border border-slate-700 text-[10px] font-bold text-slate-300 hover:text-white">3D Orbit</button>
+                    <button type="button" onclick="selectPreviewExercise(${idx}); toggle3DSpeed();" class="px-2 py-0.5 rounded bg-[#090B10] border border-slate-700 text-[10px] font-bold text-indigo-300">${speed3DMultiplier === 1.0 ? '1.0x' : '0.5x'}</button>
+                    <button type="button" onclick="selectedPreviewExIdx=${idx}; speakSelectedExerciseCue();" class="px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white">Voice Cue</button>
+                  </div>
+                </div>
+
+                ${isSelected3D ? `
+                  <div class="relative rounded-xl bg-[#090B10] border border-slate-800 overflow-hidden aspect-[16/9] cursor-grab active:cursor-grabbing">
+                    <canvas id="exercisePreview3DCanvas" class="w-full h-full block"></canvas>
+                    <div class="absolute bottom-2 left-2.5 text-[10px] text-slate-400 pointer-events-none">Drag 3D athlete to rotate • ${ex.name}</div>
+                  </div>
+                ` : `
+                  <button type="button" onclick="selectPreviewExercise(${idx})" class="w-full py-2.5 rounded-xl bg-[#090B10] hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-indigo-300 transition">
+                    Load 3D Biomechanics Viewer for #${idx + 1}
+                  </button>
+                `}
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div class="p-2.5 rounded-xl bg-[#090B10] border border-slate-800/80">
+                    <div class="font-bold text-slate-200 uppercase text-[10px] tracking-wider mb-0.5">Start Alignment</div>
+                    <p class="text-slate-400 leading-relaxed">${ex.startCue || ex.tip}</p>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-[#090B10] border border-slate-800/80">
+                    <div class="font-bold text-emerald-300 uppercase text-[10px] tracking-wider mb-0.5">Peak / Depth Form</div>
+                    <p class="text-slate-400 leading-relaxed">${ex.peakCue || ex.tip}</p>
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <div class="rounded-2xl bg-slate-100 text-slate-900 p-3.5 space-y-2">
+                <div class="flex items-center justify-between text-[11px] font-bold">
+                  <span class="text-slate-700">Target muscle illustration: ${ex.targetText}</span>
+                  <div class="flex items-center gap-2.5">
+                    <span class="flex items-center gap-1 text-rose-600"><span class="w-2.5 h-2.5 rounded-sm bg-rose-600 inline-block"></span>Primary</span>
+                    <span class="flex items-center gap-1 text-amber-600"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block"></span>Secondary</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 py-1">
+                  <div class="flex flex-col items-center">
+                    <div id="cardBodyFront_${idx}" class="w-24 h-36"></div>
+                    <span class="text-[10px] font-bold text-slate-600 uppercase">Anterior (Front)</span>
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <div id="cardBodyBack_${idx}" class="w-24 h-36"></div>
+                    <span class="text-[10px] font-bold text-slate-600 uppercase">Posterior (Back)</span>
+                  </div>
+                </div>
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+
+      // Re-bind 3D preview canvas if active card is in 'how' mode and selected
+      const activeCardMode = activeCardTabs[selectedPreviewExIdx] || 'how';
+      if (activeCardMode === 'how') {
+        const cEl = document.getElementById('exercisePreview3DCanvas');
+        if (cEl) {
+          preview3DView = new Live3DViewportController('exercisePreview3DCanvas', { mode: 'exercise', orbitEnabled: true, distance: 2.75, targetY: 0.65 });
+          preview3DView.setCharacter(char.id);
+          preview3DView.animType = activeEx.animType;
+        }
+      }
+
+      // Render anatomical muscle maps for any card currently showing 'Target muscles'
+      currentDayObj.exercises.forEach((ex, idx) => {
+        if ((activeCardTabs[idx] || 'how') === 'muscles') {
+          renderAnatomicalBodyMap(`cardBodyFront_${idx}`, `cardBodyBack_${idx}`, ex.primary, ex.secondary);
+        }
+      });
+    }
+
+    function selectPreviewExercise(idx) {
+      selectedPreviewExIdx = idx;
+      renderMapStudioView();
+      speakSelectedExerciseCue();
+    }
+
+    function speakSelectedExerciseCue() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+      const ex = dayObj.exercises[selectedPreviewExIdx];
+      const scaled = getScaledExercisePrescription(ex);
+      speakAI(`${ex.name}. ${scaled.sets} sets of ${scaled.repsLabel}. Target muscles: ${ex.targetText}. ${ex.tip}`);
+    }
+
+    // =========================================================================
+    // 7. FULL-SCREEN GUIDED HOME WORKOUT PLAYER (READY -> ACTIVE 3D -> REST -> TROPHY)
+    // =========================================================================
+    function startGuidedWorkoutPlayer() {
+      playerExIdx = 0;
+      document.getElementById('guidedPlayerModal').classList.remove('hidden');
+      if (player3DView) player3DView.setCharacter(selectedCharId);
+      enterPlayerReadyStage();
+    }
+
+    function closeGuidedPlayer() {
+      clearInterval(readyTimer);
+      clearInterval(restTimer);
+      stopVoiceCoach();
+      document.getElementById('guidedPlayerModal').classList.add('hidden');
+    }
+
+    function setPlayerStage(stageName) {
+      ['playerStageReady', 'playerStageActive', 'playerStageRest', 'playerStageComplete'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(stageName).classList.remove('hidden');
+    }
+
+    function updatePlayerProgressBars(totalCount) {
+      const container = document.getElementById('playerProgressBars');
+      let html = '';
+      for (let i = 0; i < totalCount; i++) {
+        const cls = i < playerExIdx ? 'bg-emerald-400' : i === playerExIdx ? 'bg-indigo-500' : 'bg-slate-800';
+        html += `<div class="h-1.5 flex-1 rounded-full ${cls}"></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function enterPlayerReadyStage() {
+      clearInterval(readyTimer);
+      clearInterval(restTimer);
+
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+      const ex = dayObj.exercises[playerExIdx];
+
+      updatePlayerProgressBars(dayObj.exercises.length);
+      setPlayerStage('playerStageReady');
+
+      document.getElementById('readyNextExName').textContent = ex.name;
+      document.getElementById('readyNextExTarget').textContent = `Target: ${ex.targetText}`;
+      readySec = 5;
+      document.getElementById('readyCountdownNum').textContent = readySec;
+
+      speakAI(`Get ready for ${ex.name}. Starting in 5 seconds.`);
+
+      readyTimer = setInterval(() => {
+        readySec--;
+        document.getElementById('readyCountdownNum').textContent = readySec;
+        if (readySec <= 3 && readySec > 0) speakAI(`${readySec}`);
+        if (readySec <= 0) {
+          clearInterval(readyTimer);
+          enterPlayerActiveStage();
+        }
+      }, 1000);
+    }
+
+    function skipReadyCountdown() {
+      clearInterval(readyTimer);
+      enterPlayerActiveStage();
+    }
+
+    function enterPlayerActiveStage() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+      const ex = dayObj.exercises[playerExIdx];
+      const scaled = getScaledExercisePrescription(ex);
+
+      updatePlayerProgressBars(dayObj.exercises.length);
+      setPlayerStage('playerStageActive');
+
+      if (player3DView) {
+        player3DView.setCharacter(char.id);
+        player3DView.animType = ex.animType;
+      }
+
+      document.getElementById('playerStepLabel').textContent = `Exercise ${playerExIdx + 1} of ${dayObj.exercises.length}`;
+      document.getElementById('playerExTitle').textContent = ex.name;
+      document.getElementById('playerExTargetLine').textContent = `Target: ${ex.targetText}`;
+      document.getElementById('playerFormCueText').textContent = ex.tip;
+      document.getElementById('playerPrescriptionMain').textContent = scaled.fullPrescription;
+      document.getElementById('playerPrescriptionSub').textContent = `${globalLevel} Intensity • Tap DONE when finished`;
+
+      renderAnatomicalBodyMap('playerBodyFront', 'playerBodyBack', ex.primary, ex.secondary);
+      document.getElementById('playerMuscleTags').innerHTML = ex.primary.map(m =>
+        `<span class="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-300 text-[10px] font-bold capitalize">${m}</span>`
+      ).join('');
+
+      speakAI(`Begin ${ex.name}! ${scaled.fullPrescription}. Focus on ${ex.targetText}.`);
+    }
+
+    function prevPlayerExercise() {
+      if (playerExIdx > 0) {
+        playerExIdx--;
+        enterPlayerActiveStage();
+      }
+    }
+
+    function completeCurrentPlayerExercise() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+
+      if (playerExIdx + 1 >= dayObj.exercises.length) {
+        enterPlayerCompleteStage();
+      } else {
+        enterPlayerRestStage();
+      }
+    }
+
+    function enterPlayerRestStage() {
+      clearInterval(restTimer);
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+      const currentEx = dayObj.exercises[playerExIdx];
+      const nextEx = dayObj.exercises[playerExIdx + 1];
+      const scaled = getScaledExercisePrescription(currentEx);
+
+      setPlayerStage('playerStageRest');
+      restSec = scaled.restSec;
+      document.getElementById('restCountdownDisplay').textContent = `00:${restSec.toString().padStart(2, '0')}`;
+      document.getElementById('restNextUpName').textContent = nextEx.name;
+      document.getElementById('restNextUpTarget').textContent = `Target: ${nextEx.targetText}`;
+
+      speakAI(`Take a rest for ${restSec} seconds. Next up: ${nextEx.name}.`);
+
+      restTimer = setInterval(() => {
+        restSec--;
+        const m = Math.floor(restSec / 60).toString().padStart(2, '0');
+        const s = (restSec % 60).toString().padStart(2, '0');
+        document.getElementById('restCountdownDisplay').textContent = `${m}:${s}`;
+
+        if (restSec === 10) speakAI('10 seconds left. Get ready!');
+        if (restSec <= 0) {
+          clearInterval(restTimer);
+          playerExIdx++;
+          enterPlayerActiveStage();
+        }
+      }, 1000);
+    }
+
+    function addRestSeconds(extra) {
+      restSec += extra;
+      const m = Math.floor(restSec / 60).toString().padStart(2, '0');
+      const s = (restSec % 60).toString().padStart(2, '0');
+      document.getElementById('restCountdownDisplay').textContent = `${m}:${s}`;
+    }
+
+    function skipRestStage() {
+      clearInterval(restTimer);
+      playerExIdx++;
+      enterPlayerActiveStage();
+    }
+
+    function enterPlayerCompleteStage() {
+      const char = charactersData.find(c => c.id === selectedCharId);
+      const dayObj = getWorkoutSessionForDate(char, selectedDate);
+
+      completedDaysMap[`${char.id}_${dayObj.dateKey}`] = {
+        kcal: dayObj.estKcal,
+        mins: dayObj.estMinutes,
+        completedAt: Date.now()
+      };
+      localStorage.setItem(COMPLETED_DAYS_KEY, JSON.stringify(completedDaysMap));
+
+      setPlayerStage('playerStageComplete');
+      document.getElementById('completeHeadline').textContent = `${formatDisplayDate(selectedDate)} COMPLETED!`;
+      document.getElementById('completeExCount').textContent = dayObj.exercises.length;
+      document.getElementById('completeKcal').textContent = dayObj.estKcal;
+      document.getElementById('completeDuration').textContent = `${dayObj.estMinutes}m`;
+
+      speakAI(`Congratulations! ${formatDisplayDate(selectedDate)} of ${char.name} training is complete! You burned ${dayObj.estKcal} calories.`);
+    }
+
+    function finishAndReturnToMap() {
+      closeGuidedPlayer();
+      selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
+      calendarYear = selectedDate.getFullYear();
+      calendarMonth = selectedDate.getMonth();
+      initCalendarSelectors();
+      renderMapStudioView();
+      updateHeaderAndBannerUI();
+    }
+
+    // =========================================================================
+    // 8. AI VOICE COACH (WEB SPEECH SYNTHESIS)
+    // =========================================================================
+    function setEqActive(active) {
+      const eq = document.getElementById('headerEq');
+      if (!eq) return;
+      if (active) eq.classList.remove('eq-paused');
+      else eq.classList.add('eq-paused');
+    }
+
+    function speakAI(text) {
+      if (isVoiceMuted || !('speechSynthesis' in window)) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 1.05;
+        utter.pitch = 0.98;
+        utter.onstart = () => setEqActive(true);
+        utter.onend = () => setEqActive(false);
+        utter.onerror = () => setEqActive(false);
+        window.speechSynthesis.speak(utter);
+      } catch (e) {
+        setEqActive(false);
+      }
+    }
+
+    function stopVoiceCoach() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      setEqActive(false);
+    }
+
+    function toggleVoiceMute() {
+      isVoiceMuted = !isVoiceMuted;
+      document.getElementById('headerVoiceLabel').textContent = isVoiceMuted ? 'AI Coach Off' : 'AI Coach On';
+      document.getElementById('playerVoiceStatus').textContent = isVoiceMuted ? 'AI Coach: OFF' : 'AI Coach: ON';
+      if (isVoiceMuted) {
+        stopVoiceCoach();
+        showToast('AI Voice Coach muted');
+      } else {
+        speakAI('AI Voice Coach enabled. Let us train!');
+      }
+    }
+
+    // =========================================================================
+    // 9. TOAST & INITIALIZATION
+    // =========================================================================
+    let toastTimeout = null;
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      document.getElementById('toastMessage').textContent = msg;
+      box.classList.remove('opacity-0');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => box.classList.add('opacity-0'), 2500);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initCalendarSelectors();
+      generateAllCharacter3DThumbnails();
+
+      hero3DView = new Live3DViewportController('heroBanner3DCanvas', { mode: 'heroIdle' });
+      backdrop3DView = new Live3DViewportController('studioBackdrop3DCanvas', { mode: 'heroIdle' });
+      preview3DView = new Live3DViewportController('exercisePreview3DCanvas', { mode: 'exercise', orbitEnabled: true, distance: 2.75, targetY: 0.65 });
+      player3DView = new Live3DViewportController('player3DCanvas', { mode: 'exercise', orbitEnabled: true, distance: 2.65, targetY: 0.65 });
+
+      updateLevelButtonsUI();
+      updateHeaderAndBannerUI();
+      renderCharacterGrid();
+      startMaster3DLoop();
+
+      document.getElementById('searchInput').addEventListener('input', e => {
+        searchQuery = e.target.value.trim().toLowerCase();
+        renderCharacterGrid();
+      });
+
+      document.querySelectorAll('.goal-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.goal-btn').forEach(b => {
+            b.classList.remove('active', 'bg-indigo-600', 'text-white');
+            b.classList.add('bg-surface', 'text-slate-300', 'border', 'border-slate-800');
+          });
+          btn.classList.add('active', 'bg-indigo-600', 'text-white');
+          btn.classList.remove('bg-surface', 'text-slate-300', 'border', 'border-slate-800');
+          activeGoalFilter = btn.dataset.goal;
+          renderCharacterGrid();
+        });
+      });
+
+      document.getElementById('authProfileModal').addEventListener('click', e => {
+        if (e.target.id === 'authProfileModal') closeAuthProfileModal();
+      });
+    });
+  </script>
+</body>
+</html>
